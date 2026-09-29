@@ -10,7 +10,7 @@ type FieldShellProps = {
 
 function FieldShell({ id, label, hint, error, children }: FieldShellProps) {
   return (
-    <div className="field">
+    <div className={error ? "field field--error" : "field"}>
       <label className="field__label" htmlFor={id}>
         {label}
       </label>
@@ -92,5 +92,37 @@ export function Checkbox({ label, ...rest }: CheckboxProps) {
       <input type="checkbox" {...rest} />
       {label}
     </label>
+  );
+}
+
+type FieldGroupProps = {
+  label: ReactNode;
+  hint?: ReactNode;
+  error?: ReactNode;
+  /** Riceve l'id dell'etichetta e gli id descrittivi da passare al gruppo di pulsanti. */
+  children: (ids: { labelId: string; describedBy?: string }) => ReactNode;
+};
+
+/** Gruppo di pillole o opzioni con etichetta, suggerimento ed errore. */
+export function FieldGroup({ label, hint, error, children }: FieldGroupProps) {
+  const id = useId();
+  const labelId = `${id}-label`;
+  return (
+    <div className={error ? "field field--error" : "field"}>
+      <span className="field-group__label" id={labelId}>
+        {label}
+      </span>
+      {children({ labelId, describedBy: describedBy(id, hint, error) })}
+      {hint && (
+        <p className="field__hint" id={`${id}-hint`}>
+          {hint}
+        </p>
+      )}
+      {error && (
+        <p className="field__error" id={`${id}-error`} role="alert">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }

@@ -15,11 +15,11 @@ export function Pill({ selected, onToggle, children }: PillProps) {
   );
 }
 
-type PillGroupProps = { labelId: string; children: ReactNode };
+type PillGroupProps = { labelId: string; describedBy?: string; children: ReactNode };
 
-export function PillGroup({ labelId, children }: PillGroupProps) {
+export function PillGroup({ labelId, describedBy, children }: PillGroupProps) {
   return (
-    <div className="pills" role="group" aria-labelledby={labelId}>
+    <div className="pills" role="group" aria-labelledby={labelId} aria-describedby={describedBy}>
       {children}
     </div>
   );

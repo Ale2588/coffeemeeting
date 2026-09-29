@@ -1,15 +1,27 @@
 import { createBrowserRouter, type RouteObject } from "react-router";
+import { RequireAuth } from "./auth/RequireAuth";
 import { PublicLayout } from "./layouts/PublicLayout";
+import { AuthCallbackPage } from "./pages/AuthCallbackPage";
 import { ComponentsPage } from "./pages/ComponentsPage";
 import { HomePage } from "./pages/HomePage";
+import { LoginPage } from "./pages/LoginPage";
+import { MemberPage } from "./pages/MemberPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
-import { NotYetAvailablePage } from "./pages/NotYetAvailablePage";
+import { PreferencesPage } from "./pages/PreferencesPage";
+import { SignupPage } from "./pages/SignupPage";
 
 const children: RouteObject[] = [
   { index: true, element: <HomePage /> },
-  // Fase 2: iscrizione e accesso.
-  { path: "iscriviti", element: <NotYetAvailablePage title="Iscriviti" /> },
-  { path: "accedi", element: <NotYetAvailablePage title="Accedi" /> },
+  { path: "iscriviti", element: <SignupPage /> },
+  { path: "accedi", element: <LoginPage /> },
+  { path: "auth/callback", element: <AuthCallbackPage /> },
+  {
+    element: <RequireAuth />,
+    children: [
+      { path: "account", element: <MemberPage /> },
+      { path: "account/preferenze", element: <PreferencesPage /> },
+    ],
+  },
   { path: "*", element: <NotFoundPage /> },
 ];
 

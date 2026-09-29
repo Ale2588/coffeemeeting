@@ -368,3 +368,61 @@ select.input {
   align-items: flex-end;
   padding: 14px;
 }
+
+/* ---------- Caricamento ---------- */
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 0;
+  color: var(--ink-3);
+  font-size: 15px;
+}
+
+.loading-state__spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  border-top-color: var(--green);
+  animation: btn-spin 0.8s linear infinite;
+}
+
+/* ---------- Gruppi di campi ---------- */
+.field-group__label {
+  display: block;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.field-row .field + .field {
+  margin-top: 0;
+}
+
+.form-actions {
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-note {
+  margin-top: 24px;
+}
+
+.divider-section {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.form-fields > * + * {
+  margin-top: 22px;
+}

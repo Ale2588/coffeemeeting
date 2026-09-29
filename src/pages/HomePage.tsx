@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { useAuth } from "../auth/AuthProvider";
 import { ButtonLink } from "../components/Button";
 import { Card } from "../components/Card";
 import { PhotoPlaceholder } from "../components/Placeholder";
@@ -14,15 +15,22 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export function HomePage() {
   const { min, max } = PILOT.groupSize;
   const hours = PILOT.freeCancellationHours;
+  const { session } = useAuth();
 
   return (
     <>
       <title>CoffeeMeeting · Colazioni prima del lavoro, a Milano</title>
       <SiteHeader
         action={
-          <Link to="/accedi" className="text-link">
-            Accedi
-          </Link>
+          session ? (
+            <Link to="/account" className="text-link">
+              Il mio account
+            </Link>
+          ) : (
+            <Link to="/accedi" className="text-link">
+              Accedi
+            </Link>
+          )
         }
       />
 

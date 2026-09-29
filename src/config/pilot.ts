@@ -36,4 +36,8 @@ export const PILOT = {
   breakfastPriceEur: null as number | null,
   /** Prezzo mensile dell'abbonamento in euro. Da definire (feedback, punto 7). */
   subscriptionMonthlyEur: null as number | null,
+  /** Email di contatto per "Scrivici". Da fornire. */
+  contactEmail: null as string | null,
+  /** Validità del link di accesso. Deve coincidere con "Email OTP Expiration" su Supabase. */
+  loginLinkValidityMinutes: 60,
 } as const;

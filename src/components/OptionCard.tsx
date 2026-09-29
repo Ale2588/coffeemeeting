@@ -17,11 +17,16 @@ export function OptionCard({ selected, onSelect, title, detail }: OptionCardProp
   );
 }
 
-type OptionGroupProps = { labelId: string; grid?: boolean; children: ReactNode };
+type OptionGroupProps = { labelId: string; describedBy?: string; grid?: boolean; children: ReactNode };
 
-export function OptionGroup({ labelId, grid, children }: OptionGroupProps) {
+export function OptionGroup({ labelId, describedBy, grid, children }: OptionGroupProps) {
   return (
-    <div className={grid ? "options options--grid" : "options"} role="group" aria-labelledby={labelId}>
+    <div
+      className={grid ? "options options--grid" : "options"}
+      role="group"
+      aria-labelledby={labelId}
+      aria-describedby={describedBy}
+    >
       {children}
     </div>
   );

@@ -34,3 +34,20 @@ const euro = new Intl.NumberFormat("it-IT", {
 export function formatEur(amount: number): string {
   return euro.format(amount);
 }
+
+const ISO_WEEKDAY = ["", "lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato", "domenica"];
+
+/** Giorno della settimana ISO (1 = lunedì) in italiano, con iniziale maiuscola. */
+export function weekdayName(isoWeekday: number): string {
+  return capitalize(ISO_WEEKDAY[isoWeekday] ?? "");
+}
+
+/** "07:45:00" → "7:45" */
+export function formatSlotTime(time: string): string {
+  const [h, m] = time.split(":");
+  return `${Number(h)}:${m}`;
+}
+
+export function slotLabel(slot: { weekday: number; start_time: string }): string {
+  return `${weekdayName(slot.weekday)} ${formatSlotTime(slot.start_time)}`;
+}
