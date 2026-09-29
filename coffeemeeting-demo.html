@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CoffeeMeeting — demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,500&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F5EFE6; --surface:#FFFCF7; --ink:#2B211B; --ink2:#4A3E36; --ink3:#6E6158;
+  --line:#E3D8CA; --ctl:#CDBFAE;
+  --green:#2F5D4E; --green-t:#DCE7E0; --green-t2:#E4ECE6; --green-m:#A9C4B6; --on-green:#FFFCF7;
+  --terra:#A8491F; --terra-ink:#8A3C18; --terra-t:#F3E0D3; --terra-t2:#F6E6DA;
+  --ochre:#B98B3E; --dark:#2B211B; --on-dark:#F5EFE6;
+  --serif:"Newsreader", Georgia, "Times New Roman", serif;
+  --sans:"Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1C1613; --surface:#261E1A; --ink:#F2EAE0; --ink2:#D9CDC0; --ink3:#AE9F92;
+    --line:#3A302A; --ctl:#54473E;
+    --green:#8DBCA8; --green-t:#22342D; --green-t2:#1F2E28; --green-m:#46705F; --on-green:#14201B;
+    --terra:#E08A5E; --terra-ink:#F0A77F; --terra-t:#3A2419; --terra-t2:#33221A;
+    --ochre:#D2A95E; --dark:#0F0C0A; --on-dark:#F2EAE0;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1C1613; --surface:#261E1A; --ink:#F2EAE0; --ink2:#D9CDC0; --ink3:#AE9F92;
+  --line:#3A302A; --ctl:#54473E;
+  --green:#8DBCA8; --green-t:#22342D; --green-t2:#1F2E28; --green-m:#46705F; --on-green:#14201B;
+  --terra:#E08A5E; --terra-ink:#F0A77F; --terra-t:#3A2419; --terra-t2:#33221A;
+  --ochre:#D2A95E; --dark:#0F0C0A; --on-dark:#F2EAE0;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+/* demo bar */
+.demobar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--dark);color:var(--on-dark);display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 14px;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em}
+.demobar select{background:transparent;border:1px solid rgba(245,239,230,.35);border-radius:8px;padding:6px 8px;color:var(--on-dark);font-family:var(--mono);font-size:11.5px;max-width:58vw}
+.demobar select option{color:#2B211B}
+
+.app{max-width:440px;margin:0 auto;min-height:100%;padding:0 20px 48px}
+.wide{max-width:1180px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:18px 0 10px}
+.logo{font-family:var(--serif);font-size:22px;font-weight:600;letter-spacing:-.01em;text-decoration:none;color:var(--ink);background:none;border:0;padding:0;cursor:pointer}
+.logo i{font-weight:500;color:var(--green)}
+.link{background:none;border:0;color:var(--ink2);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:10px 0;min-height:44px}
+.mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:-.015em;margin:0}
+h1{font-size:clamp(34px,10vw,44px);line-height:1.05}
+h2{font-size:28px;line-height:1.12}
+h3{font-size:21px;line-height:1.2}
+p{margin:0}
+.lead{font-size:17px;color:var(--ink2);max-width:60ch}
+.stack>*+*{margin-top:14px}
+.sec{padding:34px 0;border-top:1px solid var(--line)}
+.sec:first-of-type{border-top:0}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;border-radius:13px;border:0;font-weight:600;font-size:16px;cursor:pointer;padding:0 18px;text-align:center}
+.btn-p{background:var(--green);color:var(--on-green)}
+.btn-s{background:transparent;border:1px solid var(--ctl);color:var(--ink);font-weight:500}
+.btn-t{background:transparent;border:1.5px solid var(--terra);color:var(--terra-ink);min-height:48px}
+.btn-sm{min-height:44px;width:auto;font-size:14.5px;border-radius:12px}
+.btn[disabled]{opacity:.55;cursor:default}
+.row{display:flex;gap:10px}
+.row>.btn{flex:1}
+
+.photo{margin-top:26px;aspect-ratio:4/3;border-radius:18px;border:1px solid var(--line);background:repeating-linear-gradient(135deg,var(--surface) 0 10px,var(--paper) 10px 20px);display:flex;align-items:flex-end;padding:14px}
+.note{border-left:3px solid var(--green);padding:4px 0 4px 14px;font-family:var(--serif);font-style:italic;font-size:19px;line-height:1.3;color:var(--ink)}
+.steps{list-style:none;padding:0;margin:18px 0 0;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:40px 1fr;gap:4px 12px;padding:14px 0;border-top:1px solid var(--line)}
+.steps li::before{content:counter(s);font-family:var(--serif);font-size:30px;line-height:1;color:var(--green);grid-row:span 2}
+.steps b{font-weight:600}
+.steps span{color:var(--ink2);font-size:15px}
+.darkbox{background:var(--dark);color:var(--on-dark);border-radius:18px;padding:22px}
+.darkbox dl{margin:14px 0 0;display:grid;grid-template-columns:auto 1fr;gap:10px 18px}
+.darkbox dt{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.7;padding-top:3px}
+.darkbox dd{margin:0}
+.nolist{padding:0;margin:14px 0 0;list-style:none}
+.nolist li{padding:9px 0 9px 26px;position:relative;border-top:1px solid var(--line)}
+.nolist li::before{content:"";position:absolute;left:4px;top:19px;width:12px;height:1.5px;background:var(--terra)}
+details{border-top:1px solid var(--line);padding:4px 0}
+summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:500;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";margin-left:auto;font-family:var(--serif);font-size:22px;color:var(--ink3)}
+details[open] summary::after{content:"–"}
+details p{color:var(--ink2);font-size:15px;padding:0 0 12px}
+
+/* form */
+.field{margin-top:22px}
+.field>label,.field>.lbl{display:block;font-weight:600;font-size:15px;margin-bottom:8px}
+.hint{font-size:13.5px;color:var(--ink3);margin-top:6px}
+.input{width:100%;min-height:50px;border-radius:12px;border:1px solid var(--ctl);background:var(--surface);padding:0 14px;font-size:16px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--ctl);background:var(--surface);cursor:pointer;font-size:15px}
+.pill[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--on-green)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{min-height:62px;border-radius:12px;border:1px solid var(--ctl);background:var(--surface);cursor:pointer;text-align:left;padding:10px 14px;display:flex;flex-direction:column;justify-content:center}
+.opt small{color:var(--ink3);font-size:13px}
+.opt[aria-pressed="true"]{border:2px solid var(--green);background:var(--green-t2);padding:9px 13px}
+.opt[aria-pressed="true"] small{color:var(--ink2)}
+.col{display:flex;flex-direction:column;gap:8px}
+.rules{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:14.5px;color:var(--ink2);margin-top:24px}
+
+/* status */
+.tag{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:999px;background:var(--green-t);color:var(--green)}
+.tag.warn{background:var(--terra-t);color:var(--terra-ink)}
+.tag.neutral{background:var(--surface);border:1px solid var(--line);color:var(--ink2)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:15px}
+.kv dt{color:var(--ink3)}
+.kv dd{margin:0}
+
+/* ticket: the one bold element */
+.ticket{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:18px;margin-top:18px}
+.ticket .t-top{padding:22px 20px 20px}
+.ticket .t-day{font-family:var(--serif);font-size:44px;line-height:1;letter-spacing:-.02em}
+.ticket .t-time{font-family:var(--serif);font-style:italic;font-size:64px;line-height:.95;color:var(--green);letter-spacing:-.03em;margin-top:4px}
+.ticket .perf{height:0;border-top:2px dashed var(--line);margin:0 14px;position:relative}
+.ticket .perf::before,.ticket .perf::after{content:"";position:absolute;top:-12px;width:22px;height:22px;border-radius:50%;background:var(--paper);border:1px solid var(--line)}
+.ticket .perf::before{left:-26px;clip-path:inset(0 0 0 50%)}
+.ticket .perf::after{right:-26px;clip-path:inset(0 50% 0 0)}
+.ticket .t-bot{padding:18px 20px 20px}
+.ticket.void .t-day,.ticket.void .t-time{text-decoration:line-through;text-decoration-thickness:2px;color:var(--ink3)}
+.stamp{position:absolute;right:16px;top:18px;transform:rotate(-8deg);border:2px solid var(--green);color:var(--green);font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border-radius:8px;animation:stamp .35s ease-out}
+@keyframes stamp{from{transform:rotate(-8deg) scale(1.6);opacity:0}to{transform:rotate(-8deg) scale(1);opacity:1}}
+.map{margin-top:14px;height:120px;border-radius:12px;border:1px solid var(--line);background:
+  linear-gradient(90deg,transparent 48%,var(--line) 48% 52%,transparent 52%),
+  linear-gradient(0deg,transparent 30%,var(--line) 30% 33%,transparent 33%),
+  linear-gradient(35deg,transparent 60%,var(--line) 60% 62%,transparent 62%),var(--paper);position:relative}
+.map::after{content:"";position:absolute;left:calc(50% - 8px);top:calc(31% - 8px);width:16px;height:16px;border-radius:50%;background:var(--green);box-shadow:0 0 0 5px var(--green-t)}
+.deadline{display:flex;gap:10px;align-items:baseline;font-size:14.5px;color:var(--ink2);margin:18px 0 10px}
+.cancel{margin-top:26px;border-top:1px solid var(--line);padding-top:18px}
+.cancel p{font-size:14.5px;color:var(--ink2);margin-bottom:12px}
+.sheet{background:var(--terra-t2);border:1px solid var(--terra-t);border-radius:18px;padding:18px;margin-top:16px}
+.sheet p{color:var(--ink);font-size:15px}
+.err{background:var(--terra-t2);border-radius:14px;padding:14px 16px;color:var(--terra-ink);font-size:15px;margin-top:14px}
+.spin{width:18px;height:18px;border-radius:50%;border:2px solid var(--green-m);border-top-color:var(--on-green);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* feedback */
+.privacy{background:var(--dark);color:var(--on-dark);border-radius:14px;padding:14px 16px;font-size:14.5px;margin-top:16px}
+.person{padding:18px 0;border-top:1px solid var(--line)}
+.person .who{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.person .name{font-family:var(--serif);font-size:21px}
+.person .job{color:var(--ink3);font-size:14px}
+.votes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+.vote{min-height:52px;border-radius:12px;border:1px solid var(--ctl);background:var(--surface);cursor:pointer;font-size:13px;line-height:1.15;padding:4px}
+.vote[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--on-green)}
+.vote.low[aria-pressed="true"]{background:var(--terra);border-color:var(--terra);color:#FFFCF7}
+.reasons{margin-top:12px}
+.reasons .pill{font-size:14px;min-height:40px}
+.reasons .pill[aria-pressed="true"]{background:var(--terra-t);border-color:var(--terra);color:var(--terra-ink)}
+.check{display:flex;align-items:center;gap:10px;margin-top:12px;min-height:44px;cursor:pointer;font-size:15px}
+.check input{width:22px;height:22px;accent-color:var(--green)}
+.counter{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);margin-top:20px;background:var(--paper);padding-top:8px}
+
+.plans{display:grid;gap:10px;margin-top:18px}
+.plan{border:1px solid var(--ctl);border-radius:14px;background:var(--surface);padding:14px 16px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;min-height:64px}
+.plan[aria-pressed="true"]{border:2px solid var(--green);background:var(--green-t2);padding:13px 15px}
+.plan .price{font-family:var(--serif);font-size:24px}
+
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translateX(-50%);background:var(--dark);color:var(--on-dark);padding:12px 16px;border-radius:12px;font-size:14.5px;max-width:calc(100% - 32px);z-index:30}
+
+/* founder */
+.admin{display:grid;grid-template-columns:220px 1fr;gap:28px;padding-top:10px}
+.side{border-right:1px solid var(--line);padding-right:18px}
+.side nav{display:flex;flex-direction:column;gap:2px;margin-top:16px}
+.side button{display:flex;justify-content:space-between;align-items:center;background:none;border:0;text-align:left;padding:0 12px;min-height:44px;border-radius:10px;cursor:pointer;font-size:15px}
+.side button[aria-current="page"]{background:var(--surface);border:1px solid var(--line);font-weight:600}
+.count{font-family:var(--mono);font-size:11.5px;background:var(--terra-t);color:var(--terra-ink);border-radius:999px;padding:2px 8px}
+.side .fixed{margin-top:18px;font-size:13px;color:var(--ink3);border-top:1px solid var(--line);padding-top:14px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:560px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);font-weight:400}
+.cell{display:inline-flex;min-width:40px;justify-content:center;border-radius:8px;padding:6px 10px;font-family:var(--mono);font-size:13px}
+.c0{background:transparent;color:var(--ink3)} .c1{background:var(--surface);border:1px solid var(--line)} .c2{background:var(--green-t)} .c3{background:var(--green);color:var(--on-green)}
+.tables{display:grid;gap:16px;margin-top:18px}
+.tcard{display:grid;grid-template-columns:1fr 240px;gap:20px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px}
+.plist{list-style:none;padding:0;margin:12px 0 0}
+.plist li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14.5px}
+.plist .meta{font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.bar{display:flex;height:10px;border-radius:999px;overflow:hidden;margin:8px 0 12px}
+.bar i:first-child{background:var(--green)} .bar i:last-child{background:var(--ochre)}
+.new{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;background:var(--green-t);color:var(--green);border-radius:999px;padding:2px 7px;margin-left:6px}
+@media (max-width:820px){
+  .admin{grid-template-columns:1fr}
+  .side{border-right:0;padding-right:0}
+  .side nav{flex-direction:row;overflow-x:auto}
+  .side button{white-space:nowrap;gap:8px}
+  .tcard{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="demobar" role="region" aria-label="Controlli demo">
+  <span>DEMO · dati di esempio · prezzi provvisori</span>
+  <label><span class="sr" style="position:absolute;left:-9999px">Vai alla schermata</span>
+  <select id="jump" aria-label="Vai alla schermata">
+    <option value="home">Home pubblica</option>
+    <option value="signup">Iscrizione</option>
+    <option value="waitlist">Lista d'attesa</option>
+    <option value="invite">Invito</option>
+    <option value="confirmed">Tavolo confermato</option>
+    <option value="feedback">Riscontro</option>
+    <option value="subscribe">Proposta abbonamento</option>
+    <option value="member">Pagina iscritto</option>
+    <option value="expired">Stato: invito scaduto</option>
+    <option value="suspended">Stato: account sospeso</option>
+    <option value="admin">Pannello fondatore</option>
+  </select></label>
+</div>
+<main id="root"></main>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+const PREZZO = "8 €", ABB_M = "12 €", ABB_Y = "99 €";
+const ZONE = ["Porta Venezia","Isola","Navigli","Città Studi","Porta Romana","CityLife","Centrale","Lambrate"];
+const SLOTS = [["mar","7:45"],["mar","8:30"],["gio","7:45"],["gio","8:30"]];
+const GIORNO = {mar:"Martedì",gio:"Giovedì"};
+const TABLE = [
+  {n:"Giulia",j:"Product designer"},{n:"Marco",j:"Avvocato"},
+  {n:"Sara",j:"Insegnante di liceo"},{n:"Luca",j:"Ingegnere ferroviario"}];
+const VOTI = ["Faticosa","Così così","Piacevole","Molto piacevole"];
+const MOTIVI = ["Non ascoltava","Invadente","Commenti fuori luogo","Voleva vendere qualcosa","Molto in ritardo"];
+
+const S = {
+  view:"home", nome:"Chiara", zone:["Porta Venezia","Isola"], slots:["mar-7:45","gio-7:45"], formato:"gruppo",
+  genere:"", anno:"", pay:"idle", failNext:false, cancelOpen:false, cancelled:false,
+  votes:{}, reasons:{}, again:{}, fbSent:false, plan:"m", subActive:false, paused:false, adminTab:"tavoli"
+};
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(t){const e=$("#toast");e.textContent=t;e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>e.hidden=true,2600)}
+function go(v){S.view=v;$("#jump").value=v;render();window.scrollTo(0,0)}
+$("#jump").addEventListener("change",e=>{ if(e.target.value==="feedback"){S.fbSent=false} go(e.target.value)});
+
+const hdr = (right) => `<header class="top"><button class="logo" data-go="home" aria-label="CoffeeMeeting, home">Coffee<i>Meeting</i></button>${right||""}</header>`;
+
+const V = {};
+V.home = () => `
+${hdr(`<button class="link" data-go="member">Accedi</button>`)}
+<section class="sec stack">
+  <h1>Una colazione con persone che non conosci, prima del lavoro.</h1>
+  <p class="lead">Scegli zone e orari. Il martedì o il giovedì mattina ti mandiamo un invito: un tavolo, quattro o cinque persone di Milano, tre quarti d'ora. Poi si va in ufficio.</p>
+  <button class="btn btn-p" data-go="signup">Iscriviti alla lista d'attesa</button>
+  <p class="note">Non è un'app di incontri. Non scegli le persone, e nessuno sceglie te.</p>
+  <div class="photo" role="img" aria-label="Segnaposto per una foto reale"><span class="mono">Foto reale · da fornire</span></div>
+</section>
+<section class="sec">
+  <h2>Come funziona</h2>
+  <ol class="steps">
+    <li><b>Ti iscrivi</b><span>Zone, orari che ti vanno bene, formato. Entri in lista d'attesa.</span></li>
+    <li><b>Ricevi un invito</b><span>Giorno, ora e locale li decidiamo noi. Anche chi siede con te.</span></li>
+    <li><b>Confermi e paghi la colazione</b><span>Se non puoi più venire, disdici gratis fino a 12 ore prima.</span></li>
+    <li><b>Dici com'è andata</b><span>In trenta secondi. Nessuno vedrà i tuoi voti.</span></li>
+  </ol>
+</section>
+<section class="darkbox">
+  <h3>In pratica</h3>
+  <dl>
+    <dt>Quando</dt><dd>Martedì e giovedì, 7:45 o 8:30</dd>
+    <dt>Durata</dt><dd>Circa 45 minuti</dd>
+    <dt>Al tavolo</dt><dd>4–6 persone, oppure uno a uno</dd>
+    <dt>Colazione</dt><dd>${PREZZO}, pagata quando confermi</dd>
+    <dt>Abbonamento</dt><dd>Dopo la prima colazione, se vuoi continuare: ${ABB_M} al mese</dd>
+    <dt>Disdetta</dt><dd>Gratis fino a 12 ore prima</dd>
+  </dl>
+</section>
+<section class="sec">
+  <h2>Cosa non trovi</h2>
+  <ul class="nolist">
+    <li>Profili da sfogliare o foto da giudicare</li>
+    <li>Filtri per genere, età o aspetto</li>
+    <li>Chat prima dell'incontro</li>
+    <li>Punteggi visibili: i voti restano a noi</li>
+  </ul>
+</section>
+<section class="sec">
+  <h2>Domande</h2>
+  <div style="margin-top:12px">
+  <details><summary>Chi decide con chi faccio colazione?</summary><p>La piattaforma, in base a zona, orari e a com'è andata negli incontri precedenti. Tu scegli solo quando e dove ti è comodo.</p></details>
+  <details><summary>E se qualcuno si comporta male?</summary><p>Lo segnali nel riscontro, in forma anonima. Ogni segnalazione la legge una persona, non un algoritmo. La frequenza degli inviti dipende anche dal riscontro degli altri partecipanti.</p></details>
+  <details><summary>Devo abbonarmi subito?</summary><p>No. La prima colazione la paghi e basta. Dopo, decidi se continuare.</p></details>
+  </div>
+</section>
+<section class="sec"><button class="btn btn-p" data-go="signup">Iscriviti alla lista d'attesa</button></section>`;
+
+V.signup = () => `
+${hdr(`<button class="link" data-go="home">Annulla</button>`)}
+<h1 style="font-size:34px">Iscriviti</h1>
+<p class="lead" style="margin-top:8px">Serve un minuto. Entri in lista d'attesa e ti scriviamo quando la tua zona si apre.</p>
+<form id="f" novalidate>
+<div class="field"><label for="nome">Nome</label><input class="input" id="nome" value="${esc(S.nome)}" autocomplete="given-name"></div>
+<div class="field"><label for="email">Email</label><input class="input" id="email" type="email" value="chiara@esempio.it" autocomplete="email"></div>
+<div class="field"><label for="lavoro">Che lavoro fai</label><input class="input" id="lavoro" value="Consulente"><p class="hint">Lo vedranno le persone al tuo tavolo, dopo la conferma.</p></div>
+<div class="field"><span class="lbl" id="lz">Zone comode</span><div class="pills" role="group" aria-labelledby="lz">${ZONE.map(z=>`<button type="button" class="pill" data-zona="${z}" aria-pressed="${S.zone.includes(z)}">${z}</button>`).join("")}</div><p class="hint">Scegline quante vuoi: vicino a casa, all'ufficio o sul tragitto.</p></div>
+<div class="field"><span class="lbl" id="ls">Orari che ti vanno bene</span><div class="grid2" role="group" aria-labelledby="ls">${SLOTS.map(([d,h])=>{const k=d+"-"+h;return `<button type="button" class="opt" data-slot="${k}" aria-pressed="${S.slots.includes(k)}"><b>${GIORNO[d]}</b><small>${h}</small></button>`}).join("")}</div><p class="hint">Più orari scegli, prima arriva il primo invito.</p></div>
+<div class="field"><span class="lbl" id="lf">Formato</span><div class="col" role="group" aria-labelledby="lf">
+  ${[["gruppo","Tavolo di gruppo","4–6 persone"],["uno","Uno a uno","2 persone"],["entrambi","Entrambi","Decidiamo noi volta per volta"]].map(([k,a,b])=>`<button type="button" class="opt" data-formato="${k}" aria-pressed="${S.formato===k}"><b>${a}</b><small>${b}</small></button>`).join("")}
+</div></div>
+<div class="field"><div class="grid2">
+  <div><label for="genere" style="display:block;font-weight:600;font-size:15px;margin-bottom:8px">Genere</label><select class="input" id="genere"><option value="">Scegli</option><option>Donna</option><option>Uomo</option><option>Altro</option><option>Preferisco non dirlo</option></select></div>
+  <div><label for="anno" style="display:block;font-weight:600;font-size:15px;margin-bottom:8px">Anno di nascita</label><input class="input" id="anno" inputmode="numeric" placeholder="1988"></div>
+</div><p class="hint">Servono solo a comporre tavoli equilibrati. Nessun iscritto li vedrà.</p></div>
+<div class="rules">Iscrivendoti accetti le regole della comunità: niente vendite, niente corteggiamento, puntualità. <span class="mono">Testo completo · da fornire</span></div>
+<div style="margin-top:22px"><button class="btn btn-p" type="submit">Entra in lista d'attesa</button></div>
+</form>`;
+
+V.waitlist = () => {
+  const sl = S.slots.map(k=>{const[d,h]=k.split("-");return GIORNO[d]+" "+h}).join(", ")||"nessuno";
+  const fm = {gruppo:"Tavolo di gruppo",uno:"Uno a uno",entrambi:"Entrambi"}[S.formato];
+  return `${hdr()}
+<span class="tag neutral"><span class="dot"></span>In lista d'attesa</span>
+<h1 style="font-size:34px;margin-top:14px">Ci sei, ${esc(S.nome)}.</h1>
+<p class="lead" style="margin-top:10px">Apriamo una zona quando ci sono abbastanza persone negli stessi orari. Ti scriviamo appena arriva il tuo primo invito.</p>
+<div class="card" style="margin-top:22px"><dl class="kv"><dt>Zone</dt><dd>${esc(S.zone.join(", "))}</dd><dt>Orari</dt><dd>${sl}</dd><dt>Formato</dt><dd>${fm}</dd></dl></div>
+<div style="margin-top:14px"><button class="btn btn-s" data-go="signup">Modifica preferenze</button></div>
+<div style="margin-top:34px;border-top:1px dashed var(--ctl);padding-top:16px"><p class="mono" style="margin-bottom:10px">Solo demo</p><button class="btn btn-s" data-act="approve">Simula: il fondatore ti approva e arriva un invito</button></div>`;
+};
+
+const ticket = (extra, cls="") => `
+<article class="ticket ${cls}" aria-label="Invito">
+  ${extra||""}
+  <div class="t-top">
+    <p class="mono">Il tuo invito</p>
+    <p class="t-day" style="margin-top:10px">Martedì 6 ottobre</p>
+    <p class="t-time">7:45</p>
+  </div>
+  <div class="perf"></div>
+  <div class="t-bot">
+    <p style="font-weight:600">[Locale partner]</p>
+    <p style="color:var(--ink2);font-size:15px">Indirizzo · ${esc(S.zone[0]||"Porta Venezia")}</p>
+    <div class="map" role="img" aria-label="Mappa del locale (segnaposto)"></div>
+    <dl class="kv" style="margin-top:14px"><dt>Al tavolo</dt><dd>5 persone, tu compreso</dd><dt>Durata</dt><dd>circa 45 minuti</dd><dt>Colazione</dt><dd>${PREZZO} · caffè, brioche, spremuta</dd></dl>
+  </div>
+</article>`;
+
+const calLink = () => "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent("Colazione CoffeeMeeting")+"&dates=20261006T054500Z/20261006T063000Z&details="+encodeURIComponent("Tavolo di 5 persone. Disdetta gratuita fino a lunedì 5 ottobre, 19:45.");
+
+V.invite = () => {
+  const paying = S.pay==="loading";
+  return `${hdr(`<button class="link" data-go="member">Il mio account</button>`)}
+${ticket()}
+<a class="btn btn-s" style="margin-top:12px;text-decoration:none" href="${calLink()}" target="_blank" rel="noopener">Aggiungi al calendario</a>
+${S.pay==="failed"?`<div class="err" role="alert"><b>Carta rifiutata</b> (termina con 4417). Non ti abbiamo addebitato nulla. Il posto resta tuo fino a domenica 4 ottobre, 20:00.</div>`:""}
+<p class="deadline"><span class="mono">Rispondi entro</span> domenica 4 ottobre, 20:00</p>
+<button class="btn btn-p" data-act="pay" ${paying?"disabled":""}>${paying?`<span class="spin" aria-hidden="true"></span> Pagamento in corso…`:S.pay==="failed"?`Riprova · ${PREZZO}`:`Conferma e paga ${PREZZO}`}</button>
+${S.pay==="failed"?`<button class="btn btn-s" style="margin-top:10px" data-act="pay">Usa un altro metodo</button>`:""}
+<label class="check" style="font-size:13.5px;color:var(--ink3)"><input type="checkbox" id="failnext" ${S.failNext?"checked":""}> Demo: simula carta rifiutata</label>
+${cancelBlock(false)}`;
+};
+
+function cancelBlock(paid){
+  if(S.cancelled) return "";
+  return `<div class="cancel">
+  <p>Non puoi più venire? Disdetta gratuita fino a <b>lunedì 5 ottobre, 19:45</b> (12 ore prima).</p>
+  ${S.cancelOpen?`<div class="sheet" role="dialog" aria-label="Conferma disdetta">
+    <h3>Disdici la colazione?</h3>
+    <p style="margin-top:8px">${paid?`Ti rimborsiamo ${PREZZO} sulla carta usata, entro 5 giorni lavorativi.`:`Non ti addebitiamo nulla.`} Il tuo posto passa a un'altra persona.</p>
+    <p style="margin-top:8px;font-size:14px;color:var(--ink2)">Dopo lunedì 5 ottobre alle 19:45 la colazione non è più rimborsabile.</p>
+    <div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn btn-t" data-act="docancel">Sì, disdici</button><button class="btn btn-s" data-act="closecancel" style="min-height:48px">Torna all'invito</button></div>
+  </div>`:`<button class="btn btn-t" data-act="opencancel">Disdici</button>`}
+</div>`;
+}
+
+V.confirmed = () => S.cancelled ? `${hdr()}
+${ticket("", "void")}
+<p class="lead" style="margin-top:18px">Colazione disdetta. ${PREZZO} ti tornano sulla carta entro 5 giorni lavorativi. Il prossimo invito arriva come sempre.</p>
+<div style="margin-top:16px"><button class="btn btn-s" data-go="member">Vai al mio account</button></div>` : `${hdr(`<button class="link" data-go="member">Il mio account</button>`)}
+${ticket(`<span class="stamp">Confermato</span>`)}
+<p class="lead" style="margin-top:18px">Pagato ${PREZZO}. Ti mandiamo un promemoria la sera prima. Al tavolo vedrai nomi e lavori degli altri, nient'altro.</p>
+<a class="btn btn-s" style="margin-top:14px;text-decoration:none" href="${calLink()}" target="_blank" rel="noopener">Aggiungi al calendario</a>
+${cancelBlock(true)}
+<div style="margin-top:34px;border-top:1px dashed var(--ctl);padding-top:16px"><p class="mono" style="margin-bottom:10px">Solo demo</p><button class="btn btn-s" data-act="tofeedback">Vai a martedì, dopo la colazione</button></div>`;
+
+V.feedback = () => {
+  if(S.fbSent) return `${hdr()}
+<h1 style="font-size:36px;margin-top:20px">Grazie. Buona giornata di lavoro.</h1>
+<div style="margin-top:22px"><button class="btn btn-p" data-go="subscribe">Continua</button></div>`;
+  const done = TABLE.filter((_,i)=>S.votes[i]).length;
+  return `${hdr()}
+<h1 style="font-size:34px">Com'è andata con ciascuno?</h1>
+<div class="privacy">Nessuno vedrà i tuoi voti: né le persone al tavolo, né altri iscritti. Servono a noi per comporre i prossimi tavoli.</div>
+<div style="margin-top:8px">
+${TABLE.map((p,i)=>{const v=S.votes[i];const low=v&&v<=2;return `<div class="person">
+  <div class="who"><span class="name">${p.n}</span><span class="job">${p.j}</span></div>
+  <div class="votes" role="group" aria-label="Voto per ${p.n}">${VOTI.map((t,k)=>`<button class="vote ${k<2?"low":""}" data-vote="${i}:${k+1}" aria-pressed="${v===k+1}">${t}</button>`).join("")}</div>
+  ${low?`<div class="reasons"><p style="font-size:14px;color:var(--ink2);margin-bottom:8px">Cosa non è andato? <span style="color:var(--ink3)">(facoltativo)</span></p><div class="pills">${MOTIVI.map(m=>`<button class="pill" data-reason="${i}:${m}" aria-pressed="${(S.reasons[i]||[]).includes(m)}">${m}</button>`).join("")}</div></div>`:""}
+  <label class="check"><input type="checkbox" data-again="${i}" ${S.again[i]?"checked":""}> Vorrei rincontrare ${p.n}</label>
+</div>`}).join("")}
+</div>
+<p style="font-size:14px;margin-top:10px"><button class="link" data-act="grave">È successo qualcosa di grave? Scrivici</button></p>
+<div class="counter"><button class="btn btn-p" data-act="sendfb" ${done<TABLE.length?"disabled":""}>Invia · ${done} di ${TABLE.length}</button></div>`;
+};
+
+V.subscribe = () => `${hdr()}
+<p class="mono">La tua prima colazione è fatta</p>
+<h1 style="font-size:34px;margin-top:10px">Vuoi continuare?</h1>
+<p class="lead" style="margin-top:10px">Con l'abbonamento ricevi inviti ogni settimana nei tuoi orari. La colazione la paghi a parte, ogni volta che confermi.</p>
+<div class="plans" role="group" aria-label="Piano">
+  <button class="plan" data-plan="m" aria-pressed="${S.plan==="m"}"><span><b>Mensile</b><br><small style="color:var(--ink3)">Disdici quando vuoi</small></span><span class="price">${ABB_M}</span></button>
+  <button class="plan" data-plan="y" aria-pressed="${S.plan==="y"}"><span><b>Annuale</b><br><small style="color:var(--ink3)">Circa 8 € al mese</small></span><span class="price">${ABB_Y}</span></button>
+</div>
+<div style="margin-top:18px"><button class="btn btn-p" data-act="subscribe">Attiva l'abbonamento · ${S.plan==="m"?ABB_M+" al mese":ABB_Y+" all'anno"}</button></div>
+<div style="margin-top:10px"><button class="btn btn-s" data-act="later">Non ora, ricordamelo tra una settimana</button></div>
+<p style="text-align:center;margin-top:8px"><button class="link" data-act="close">Chiudi il mio account</button></p>`;
+
+V.member = () => `${hdr(`<button class="link" data-go="home">Esci</button>`)}
+<h1 style="font-size:34px">Ciao, ${esc(S.nome)}.</h1>
+<div style="margin-top:14px">${S.subActive?`<span class="tag"><span class="dot"></span>Abbonamento attivo · ${S.plan==="m"?"mensile":"annuale"}</span>`:`<span class="tag warn"><span class="dot"></span>Abbonamento non attivo</span>`}
+${S.paused?` <span class="tag neutral" style="margin-left:6px"><span class="dot"></span>Inviti in pausa</span>`:""}</div>
+<section class="sec" style="margin-top:14px">
+  <h3>Prossimi inviti</h3>
+  <p style="color:var(--ink2);margin-top:8px">${S.paused?"Inviti in pausa fino a lunedì 19 ottobre.":S.subActive?"Il prossimo invito arriva entro domenica sera.":"Attiva l'abbonamento per ricevere nuovi inviti."}</p>
+  ${!S.subActive?`<div style="margin-top:12px"><button class="btn btn-p" data-go="subscribe">Attiva</button></div>`:""}
+</section>
+<section class="sec"><dl class="kv"><dt>Colazioni fatte</dt><dd>1</dd><dt>Zone</dt><dd>${esc(S.zone.join(", "))}</dd><dt>Orari</dt><dd>${S.slots.length} scelti</dd></dl>
+<div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn btn-s btn-sm" data-go="signup">Modifica preferenze</button><button class="btn btn-s btn-sm" data-act="pause">${S.paused?"Riprendi gli inviti":"Metti in pausa gli inviti"}</button></div></section>`;
+
+V.expired = () => `${hdr()}
+${ticket("", "void")}
+<span class="tag warn" style="margin-top:18px"><span class="dot"></span>Invito scaduto</span>
+<p class="lead" style="margin-top:12px">Non hai risposto entro domenica 4 ottobre alle 20:00: il posto è passato a un'altra persona. Non ti abbiamo addebitato nulla.</p>
+<div class="col" style="margin-top:18px"><button class="btn btn-p" data-act="reminder">Attiva promemoria</button><button class="btn btn-s" data-act="pause">Metti in pausa gli inviti</button></div>`;
+
+V.suspended = () => `${hdr()}
+<span class="tag warn"><span class="dot"></span>Account sospeso</span>
+<h1 style="font-size:32px;margin-top:14px">Per ora non riceverai inviti.</h1>
+<p class="lead" style="margin-top:10px">Ti abbiamo scritto una mail con i dettagli. Chi ha segnalato resta anonimo. Puoi rispondere e dirci la tua: ogni caso lo legge una persona.</p>
+<p class="lead" style="margin-top:10px">Le colazioni già pagate ti vengono rimborsate.</p>
+<div style="margin-top:18px"><button class="btn btn-s" data-act="grave">Scrivici</button></div>`;
+
+/* founder panel */
+const AV = {"Porta Venezia":[6,3,5,2],"Isola":[4,1,3,0],"Navigli":[2,0,1,1],"Città Studi":[1,0,2,0],"Porta Romana":[3,2,0,0],"CityLife":[5,4,2,1],"Centrale":[2,1,1,0],"Lambrate":[0,0,1,0]};
+const cls = n => n>=6?"c3":n>=4?"c2":n>=1?"c1":"c0";
+const TAVOLI = [
+  {z:"Porta Venezia",d:"Mar 6 ottobre · 7:45",f:"Gruppo",p:[["Chiara","Consulente","D · 38",true],["Giulia","Product designer","D · 31"],["Marco","Avvocato","U · 44"],["Sara","Insegnante","D · 36"],["Luca","Ingegnere","U · 29"]],g:60,eta:"29–44",st:"Equilibrato"},
+  {z:"CityLife",d:"Gio 8 ottobre · 7:45",f:"Gruppo",p:[["Paolo","Commercialista","U · 52"],["Andrea","Sviluppatore","U · 27"],["Fabio","Architetto","U · 41"],["Elena","Medico","D · 46",true]],g:75,eta:"27–52",st:"Genere sbilanciato"},
+  {z:"Isola",d:"Mar 6 ottobre · 8:30",f:"Uno a uno",p:[["Nadia","Ricercatrice","D · 33"],["Tommaso","Fotografo","U · 61"]],g:null,eta:"33–61",st:"Età molto distanti"}
+];
+V.admin = () => {
+  const t = S.adminTab;
+  const nav = [["disp","Disponibilità"],["tavoli","Tavoli"],["attesa","Lista d'attesa",7],["segn","Segnalazioni",2],["iscritti","Iscritti"]];
+  let body="";
+  if(t==="disp") body = `<h2>Disponibilità</h2><p style="color:var(--ink2);margin-top:6px">Iscritti attivi disponibili per zona e orario.</p>
+  <div class="scroll" style="margin-top:16px"><table><thead><tr><th>Zona</th>${SLOTS.map(([d,h])=>`<th>${d} ${h}</th>`).join("")}</tr></thead><tbody>
+  ${Object.entries(AV).map(([z,a])=>`<tr><td>${z}</td>${a.map(n=>`<td><span class="cell ${cls(n)}">${n}</span></td>`).join("")}</tr>`).join("")}
+  </tbody></table></div><p class="hint" style="margin-top:10px">1–3 non basta · 4–5 un tavolo · 6+ un tavolo e margine</p>`;
+  else if(t==="tavoli") body = `<h2>Tavoli proposti</h2><p style="color:var(--ink2);margin-top:6px">Gli inviti partono solo dopo la tua approvazione.</p>
+  <div class="tables">${TAVOLI.map(x=>`<article class="tcard"><div>
+    <p class="mono">${x.z} · ${x.d} · ${x.f}</p>
+    <p style="margin-top:8px"><button class="link" style="min-height:auto;padding:0" data-act="venue">Assegna locale</button></p>
+    <ul class="plist">${x.p.map(([n,j,m,nw])=>`<li><span>${n}${nw?`<span class="new">prima volta</span>`:""} <span style="color:var(--ink3)">· ${j}</span></span><span class="meta">${m}</span></li>`).join("")}</ul>
+  </div><div>
+    ${x.g!==null?`<p class="mono">Genere</p><div class="bar" aria-label="${x.g}% stesso genere"><i style="width:${x.g}%"></i><i style="width:${100-x.g}%"></i></div>`:`<p class="mono">Genere</p><p style="font-size:13.5px;color:var(--ink3);margin:6px 0 12px">Non valutato per l'uno a uno</p>`}
+    <p class="mono">Età</p><p style="margin:4px 0 12px">${x.eta}</p>
+    <span class="tag ${x.st==="Equilibrato"?"":"warn"}"><span class="dot"></span>${x.st}</span>
+    <div class="col" style="margin-top:14px"><button class="btn btn-p btn-sm" style="width:100%" data-act="sendinv">Invia inviti</button><button class="btn btn-s btn-sm" style="width:100%" data-act="edit">Modifica</button></div>
+  </div></article>`).join("")}</div>`;
+  else if(t==="attesa") body = `<h2>Lista d'attesa</h2><div class="scroll" style="margin-top:16px"><table><thead><tr><th>Nome</th><th>Iscritto il</th><th>Lavoro</th><th>Zona</th><th>Formato</th><th></th></tr></thead><tbody>
+  ${[["Roberta","22 set","Farmacista","Isola","Gruppo"],["Davide","23 set","Copywriter","Navigli","Entrambi"],["Ilaria","25 set","HR manager","CityLife","Gruppo"]].map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}<td style="white-space:nowrap"><button class="btn btn-p btn-sm" data-act="ok">Approva</button> <button class="btn btn-s btn-sm" data-act="no">Rifiuta</button></td></tr>`).join("")}
+  </tbody></table></div>`;
+  else if(t==="segn") body = `<h2>Segnalazioni</h2><div class="card" style="margin-top:16px">
+    <p class="mono">Tavolo CityLife · gio 1 ottobre · segnalato da 2 persone su 4</p>
+    <h3 style="margin-top:8px">Fabio · Architetto</h3>
+    <div class="pills" style="margin-top:10px"><span class="tag warn">Voleva vendere qualcosa ×2</span><span class="tag warn">Non ascoltava ×1</span></div>
+    <p style="color:var(--ink2);font-size:14.5px;margin-top:12px">Storico: 6 colazioni, media voti in calo nelle ultime 3.</p>
+    <div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn btn-s btn-sm" data-act="warn">Avvisa</button><button class="btn btn-t btn-sm" data-act="susp">Sospendi</button><button class="btn btn-t btn-sm" data-act="exp">Espelli</button><button class="btn btn-s btn-sm" data-act="arch">Archivia</button></div></div>`;
+  else body = `<h2>Iscritti</h2><div class="scroll" style="margin-top:16px"><table><thead><tr><th>Nome</th><th>Lavoro</th><th>Zona</th><th>Colazioni</th><th>Media voti</th><th>Stato</th></tr></thead><tbody>
+  ${[["Chiara","Consulente","Porta Venezia",1,"—","Attivo"],["Giulia","Product designer","Porta Venezia",5,"3,6","Attivo"],["Fabio","Architetto","CityLife",6,"2,1 ↓","Avvisato"],["Marco","Avvocato","Porta Venezia",3,"3,2","Attivo"]].map(r=>`<tr>${r.slice(0,5).map(c=>`<td>${c}</td>`).join("")}<td><span class="tag ${r[5]==="Attivo"?"":"warn"}">${r[5]}</span></td></tr>`).join("")}
+  </tbody></table></div><p class="hint" style="margin-top:10px">La media voti è visibile solo qui. Sotto soglia: meno inviti, poi verifica.</p>`;
+  return `<div class="app wide">${hdr(`<button class="link" data-go="home">Esci</button>`)}
+<div class="admin"><aside class="side"><p class="mono">Pannello</p><nav>${nav.map(([k,l,c])=>`<button data-tab="${k}" ${t===k?'aria-current="page"':""}>${l}${c?`<span class="count">${c}</span>`:""}</button>`).join("")}</nav>
+<p class="fixed">Indicatori di genere ed età visibili solo qui.</p></aside>
+<section>${body}</section></div></div>`;
+};
+
+function render(){
+  const v = S.view;
+  $("#root").innerHTML = v==="admin" ? V.admin() : `<div class="app">${V[v]()}</div>`;
+  document.title = "CoffeeMeeting — demo";
+}
+
+document.addEventListener("click", e=>{
+  const b = e.target.closest("button,[data-go]"); if(!b) return;
+  const d = b.dataset;
+  if(d.go){ go(d.go); return; }
+  if(d.zona){ S.zone = S.zone.includes(d.zona)?S.zone.filter(x=>x!==d.zona):[...S.zone,d.zona]; render(); return; }
+  if(d.slot){ S.slots = S.slots.includes(d.slot)?S.slots.filter(x=>x!==d.slot):[...S.slots,d.slot]; render(); return; }
+  if(d.formato){ S.formato=d.formato; render(); return; }
+  if(d.vote){ const [i,k]=d.vote.split(":").map(Number); S.votes[i]=k; if(k>2) delete S.reasons[i]; render(); return; }
+  if(d.reason){ const [i,m]=d.reason.split(":"); const r=S.reasons[i]||[]; S.reasons[i]=r.includes(m)?r.filter(x=>x!==m):[...r,m]; render(); return; }
+  if(d.plan){ S.plan=d.plan; render(); return; }
+  if(d.tab){ S.adminTab=d.tab; render(); return; }
+  const a = d.act; if(!a) return;
+  const acts = {
+    approve(){ S.pay="idle"; S.cancelOpen=false; S.cancelled=false; go("invite"); },
+    pay(){ S.pay="loading"; render(); setTimeout(()=>{ if(S.failNext){S.pay="failed"; S.failNext=false; render();} else {S.pay="done"; go("confirmed");} },1300); },
+    opencancel(){ S.cancelOpen=true; render(); },
+    closecancel(){ S.cancelOpen=false; render(); },
+    docancel(){ S.cancelOpen=false; S.cancelled=true; if(S.view==="invite"){ toast("Invito disdetto. Nessun addebito."); go("member"); } else render(); },
+    tofeedback(){ S.fbSent=false; go("feedback"); },
+    sendfb(){ S.fbSent=true; render(); window.scrollTo(0,0); },
+    grave(){ toast("Nella versione reale si apre un modulo che legge il fondatore."); },
+    subscribe(){ S.subActive=true; toast("Abbonamento attivato."); go("member"); },
+    later(){ toast("Ti ricordiamo tra una settimana."); go("member"); },
+    close(){ toast("Nella versione reale chiede conferma e chiude l'account."); },
+    pause(){ S.paused=!S.paused; toast(S.paused?"Inviti in pausa fino al 19 ottobre.":"Inviti ripresi."); if(S.view==="member") render(); else go("member"); },
+    reminder(){ toast("Ti avvisiamo la sera prima della scadenza."); },
+    sendinv(){ toast("Inviti inviati a 5 persone."); }, edit(){ toast("Modifica tavolo: nella versione reale."); },
+    venue(){ toast("Scelta del locale dall'elenco Locali: nella versione reale."); },
+    ok(){ toast("Approvato. Annulla"); }, no(){ toast("Rifiutato. Annulla"); },
+    warn(){ toast("Avviso inviato. Stato: avvisato."); }, susp(){ toast("Account sospeso."); }, exp(){ toast("Espulsione: richiede conferma."); }, arch(){ toast("Segnalazione archiviata."); }
+  };
+  acts[a] && acts[a]();
+});
+document.addEventListener("change", e=>{
+  if(e.target.id==="failnext"){ S.failNext=e.target.checked; }
+  if(e.target.dataset.again){ S.again[e.target.dataset.again]=e.target.checked; }
+});
+document.addEventListener("submit", e=>{
+  if(e.target.id==="f"){ e.preventDefault(); const n=$("#nome").value.trim(); if(n) S.nome=n; if(!S.zone.length){ toast("Scegli almeno una zona."); return; } if(!S.slots.length){ toast("Scegli almeno un orario."); return; } go("waitlist"); }
+});
+render();
+</script>
+</body>
+</html>
