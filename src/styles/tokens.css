@@ -1,0 +1,94 @@
+/* Token visivi — specifica, sezione 7. Unica fonte per colori, font e forme. */
+:root {
+  --paper: #f5efe6;
+  --surface: #fffcf7;
+  --ink: #2b211b;
+  --ink-2: #4a3e36;
+  --ink-3: #6e6158;
+  --line: #e3d8ca;
+  --control: #cdbfae;
+
+  --green: #2f5d4e;
+  --green-tint: #dce7e0;
+  --green-tint-2: #e4ece6;
+  --green-mid: #a9c4b6;
+  --on-green: #fffcf7;
+
+  --terra: #a8491f;
+  --terra-ink: #8a3c18;
+  --terra-tint: #f3e0d3;
+  --terra-tint-2: #f6e6da;
+
+  /* Genere secondario nella barra di equilibrio: solo pannello del fondatore. */
+  --ochre: #b98b3e;
+
+  --dark: #2b211b;
+  --on-dark: #f5efe6;
+
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --radius-control: 12px;
+  --radius-button: 13px;
+  --radius-box: 14px;
+  --radius-card: 18px;
+  --radius-pill: 999px;
+
+  --tap-min: 44px;
+  --tap-main: 54px;
+
+  --page-max: 440px;
+  --page-wide: 1180px;
+  --gutter: 20px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1c1613;
+    --surface: #261e1a;
+    --ink: #f2eae0;
+    --ink-2: #d9cdc0;
+    --ink-3: #ae9f92;
+    --line: #3a302a;
+    --control: #54473e;
+    --green: #8dbca8;
+    --green-tint: #22342d;
+    --green-tint-2: #1f2e28;
+    --green-mid: #46705f;
+    --on-green: #14201b;
+    --terra: #e08a5e;
+    --terra-ink: #f0a77f;
+    --terra-tint: #3a2419;
+    --terra-tint-2: #33221a;
+    --ochre: #d2a95e;
+    --dark: #0f0c0a;
+    --on-dark: #f2eae0;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #1c1613;
+  --surface: #261e1a;
+  --ink: #f2eae0;
+  --ink-2: #d9cdc0;
+  --ink-3: #ae9f92;
+  --line: #3a302a;
+  --control: #54473e;
+  --green: #8dbca8;
+  --green-tint: #22342d;
+  --green-tint-2: #1f2e28;
+  --green-mid: #46705f;
+  --on-green: #14201b;
+  --terra: #e08a5e;
+  --terra-ink: #f0a77f;
+  --terra-tint: #3a2419;
+  --terra-tint-2: #33221a;
+  --ochre: #d2a95e;
+  --dark: #0f0c0a;
+  --on-dark: #f2eae0;
+  color-scheme: dark;
+}
