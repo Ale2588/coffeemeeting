@@ -14,7 +14,7 @@
 - Home pubblica (A1), con prezzi in segnaposto.
 - Catalogo dei componenti su `/componenti`, solo in sviluppo.
 
-## Fase 2 — Iscrizione e accesso ✅ (in attesa di conferma)
+## Fase 2 — Iscrizione e accesso ✅
 
 ### Fatto
 - **Database** (`supabase/migrations/20260929120000_signup_and_access.sql`):
@@ -73,6 +73,33 @@
 - Foto reali per la home.
 - Conferma di slot e zone.
 
-### Domande aperte
-1. **Età minima**: ho messo 18 anni (e al massimo 100) come requisito per l'iscrizione. Va bene?
-2. **Genere e anno sbagliati**: l'iscritto non li può correggere da solo (li vede solo il fondatore), deve scrivere. Va bene, o preferisci che si possano reinserire senza mostrarli?
+### Decisioni
+- Età minima 18 anni: confermata.
+- Genere e anno sbagliati: per ora l'iscritto scrive al fondatore. In produzione si valuterà un agente di controllo.
+
+## Fase 3 — Pannello del fondatore, base ✅ (in attesa di conferma)
+
+### Fatto
+- **Database** (`supabase/migrations/20260930090000_founder_panel.sql`):
+  - tabelle `venues` (locali), `venue_slots` (slot disponibili per locale), `member_status_events` (storico dei cambi di stato, con autore e data);
+  - RLS attivata subito dopo ogni tabella; lettura solo per il fondatore;
+  - funzioni riservate al fondatore: `founder_set_member_status` (restituisce lo stato precedente per "Annulla"; non tocca il ruolo; il fondatore non può cambiare il proprio stato), `founder_save_venue`, `founder_availability`, `founder_pending_signups_count`.
+- **Test del database**: `supabase/tests/phase3_test.sql` (permessi, approvazione e annullamento, storico, matrice con pausa e sospensione, locali, visibilità di genere e anno). Le funzioni di supporto sono in `supabase/tests/helpers.sql`. `npm run test:db` passa per le fasi 2 e 3.
+- **Pannello** (`/pannello`, solo ruolo fondatore; chi non lo è viene rimandato a `/account`):
+  - **Disponibilità**: matrice zona × slot con iscritti attivi o avvisati e non in pausa, contati in ogni zona scelta. Soglie 1–3, 4–5, 6+ con colore e segno (● / ●●), non solo colore;
+  - **Lista d'attesa**: nome, email, data d'iscrizione, lavoro, zone, orari, formato, genere · età. "Approva" / "Rifiuta" con "Annulla" per 8 secondi. Contatore nella barra laterale. Avviso con il numero di iscrizioni non ancora confermate via email;
+  - **Iscritti**: filtri per stato con conteggi, tabella con genere · età e stato, menu "Cambia…" con conferma (testo specifico per sospensione ed espulsione) e "Annulla";
+  - **Locali**: elenco con nome, indirizzo, zona, slot disponibili, note, stato; aggiungi e modifica.
+  - Nota fissa: "Indicatori di genere ed età visibili solo qui."
+- Link "Pannello" nella pagina dell'iscritto, solo per il fondatore.
+- Provato nel browser (1280px e 375px) con risposte di Supabase simulate: navigazione, approva e annulla, cambio stato con conferma, aggiunta e modifica locale, blocco per chi non è fondatore. Nessun errore in console.
+
+### Manca / rimandato
+- Colonna "Colazioni" (mostra "—") e "Media voti": fasi 4 e 6.
+- Scheda dell'iscritto con andamento della media e motivi: fase 6.
+- Voci "Tavoli" e "Segnalazioni": fasi 4 e 6.
+- Email di approvazione: fase 7. Andrà inviata con un piccolo ritardo, così "Annulla" resta possibile.
+
+### Da configurare a mano
+- Eseguire nel SQL Editor la nuova migrazione `supabase/migrations/20260930090000_founder_panel.sql` (stesso procedimento della fase 2).
+- Se non l'hai già fatto: iscriviti dal sito e poi `update public.profiles set role = 'founder', status = 'active' where email = '<tua email>';`

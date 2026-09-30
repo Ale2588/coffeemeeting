@@ -4,6 +4,7 @@ import { supabase } from "./supabase";
 export type MeetingFormat = "group" | "one_to_one" | "both";
 export type Gender = "female" | "male" | "other" | "undisclosed";
 export type MemberStatus = "waitlisted" | "active" | "warned" | "suspended" | "expelled" | "rejected";
+export type MemberRole = "member" | "founder";
 
 export type Zone = { id: number; name: string };
 export type Slot = { id: number; weekday: number; start_time: string; duration_minutes: number };
@@ -16,6 +17,7 @@ export type MyProfile = {
   job: string;
   format: MeetingFormat;
   status: MemberStatus;
+  role: MemberRole;
   invitesResumeOn: string | null;
   zones: Zone[];
   slots: Slot[];
@@ -45,21 +47,27 @@ const SERVER_MESSAGES: Record<string, string> = {
   invalid_birth_year: "Controlla l'anno di nascita: per iscriverti devi essere maggiorenne.",
   invalid_resume_date: "Scegli una data di ripresa tra domani e un anno da oggi.",
   not_allowed: "Questa operazione non è disponibile per il tuo account.",
+  cannot_change_self: "Non puoi cambiare il tuo stato.",
+  not_found: "Non trovato: forse è stato eliminato. Ricarica la pagina.",
+  invalid_status: "Stato non valido.",
+  invalid_venue_name: "Scrivi il nome del locale.",
+  invalid_venue_address: "Scrivi l'indirizzo del locale.",
+  invalid_venue_notes: "Le note possono avere al massimo 1000 caratteri.",
 };
 
 const GENERIC = "Qualcosa non ha funzionato. Riprova tra poco.";
 
-function toApiError(error: { message?: string } | null): ApiError {
+export function toApiError(error: { message?: string } | null): ApiError {
   const code = Object.keys(SERVER_MESSAGES).find((k) => error?.message?.includes(k));
   return new ApiError(code ? SERVER_MESSAGES[code] : GENERIC);
 }
 
-function client() {
+export function client() {
   if (!supabase) throw new ApiError("Il servizio non è ancora configurato.");
   return supabase;
 }
 
-const byTime = (a: Slot, b: Slot) => a.weekday - b.weekday || a.start_time.localeCompare(b.start_time);
+export const byTime = (a: Slot, b: Slot) => a.weekday - b.weekday || a.start_time.localeCompare(b.start_time);
 
 export async function fetchCatalog(): Promise<Catalog> {
   const db = client();
@@ -78,6 +86,7 @@ type ProfileRow = {
   job: string;
   format: MeetingFormat;
   status: MemberStatus;
+  role: MemberRole;
   invites_resume_on: string | null;
   profile_zones: { zones: Zone & { sort_order: number } }[];
   profile_slots: { slots: Slot }[];
@@ -87,7 +96,7 @@ async function selectMyProfile(userId: string): Promise<MyProfile | null> {
   const { data, error } = await client()
     .from("profiles")
     .select(
-      "id, email, first_name, job, format, status, invites_resume_on, " +
+      "id, email, first_name, job, format, status, role, invites_resume_on, " +
         "profile_zones(zones(id, name, sort_order)), profile_slots(slots(id, weekday, start_time, duration_minutes))",
     )
     .eq("id", userId)
@@ -102,6 +111,7 @@ async function selectMyProfile(userId: string): Promise<MyProfile | null> {
     job: row.job,
     format: row.format,
     status: row.status,
+    role: row.role,
     invitesResumeOn: row.invites_resume_on,
     zones: row.profile_zones
       .map((pz) => pz.zones)

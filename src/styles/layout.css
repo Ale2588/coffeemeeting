@@ -46,3 +46,8 @@
     --page-max: 560px;
   }
 }
+
+.header-actions {
+  display: inline-flex;
+  gap: 16px;
+}

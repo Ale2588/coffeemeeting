@@ -27,9 +27,16 @@ export function MemberPage() {
   const header = (
     <SiteHeader
       action={
-        <button type="button" className="text-link" onClick={logout}>
-          Esci
-        </button>
+        <span className="header-actions">
+          {profile?.role === "founder" && (
+            <Link to="/pannello" className="text-link">
+              Pannello
+            </Link>
+          )}
+          <button type="button" className="text-link" onClick={logout}>
+            Esci
+          </button>
+        </span>
       }
     />
   );

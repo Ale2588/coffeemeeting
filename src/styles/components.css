@@ -426,3 +426,8 @@ select.input {
 .form-fields > * + * {
   margin-top: 22px;
 }
+
+.muted {
+  color: var(--ink-3);
+  font-size: 13.5px;
+}

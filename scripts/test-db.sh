@@ -30,5 +30,5 @@ for f in "$ROOT"/supabase/migrations/*.sql; do
 done
 for f in "$ROOT"/supabase/tests/*_test.sql; do
   echo "test: $(basename "$f")"
-  psql_run -o /dev/null -f "$f"
+  psql_run -o /dev/null -f "$ROOT/supabase/tests/helpers.sql" -f "$f"
 done
