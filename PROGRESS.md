@@ -47,6 +47,12 @@
 - Gli slot della home vengono ancora da `src/config/pilot.ts`, non dal database: se cambi gli slot nel database, aggiorna anche quel file.
 - Non è stata provata contro un progetto Supabase vero: in questo ambiente non c'è Docker. Il database è verificato su Postgres 16, l'interfaccia con risposte simulate.
 
+### Stato della configurazione (30 settembre 2026)
+- Progetto Supabase creato (`bekiynzalqnvfvvimexb`), migrazione della fase 2 eseguita dal SQL Editor.
+- URL Configuration fatta.
+- Email (modelli in italiano, SMTP con Resend, dominio, limiti di invio): rimandate a fine progetto, su decisione del fondatore. Fino ad allora vale l'invio incluso di Supabase, che manda solo agli indirizzi del team del progetto: basta per le prove.
+- Da fare alla messa online: variabili `VITE_SUPABASE_URL` (senza `/rest/v1/`) e `VITE_SUPABASE_ANON_KEY` su Vercel.
+
 ### Da configurare a mano
 1. **Progetto Supabase** (regione UE, es. Francoforte):
    - applica la migrazione: `npx supabase link --project-ref <ref>` e poi `npx supabase db push`, oppure incolla il file SQL nell'editor SQL;
