@@ -5,18 +5,21 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && tsc -p api && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b",
-    "test:db": "bash scripts/test-db.sh"
+    "typecheck": "tsc -b && tsc -p api",
+    "test:db": "bash scripts/test-db.sh",
+    "test:api": "node scripts/test-api.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "react-router": "^7.18.4"
+    "react-router": "^7.18.4",
+    "stripe": "^22.6.2"
   },
   "devDependencies": {
+    "@types/node": "^22.20.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
