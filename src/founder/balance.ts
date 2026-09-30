@@ -19,6 +19,8 @@ export type Balance = {
   labels: { text: string; ok: boolean }[];
 };
 
+const sizeOkGroup = (n: number) => n >= 4 && n <= 6;
+
 // Soglie della specifica e del feedback.
 const GENDER_THRESHOLD = 0.75;
 const AGE_GAP_THRESHOLD = 25;
@@ -43,7 +45,8 @@ export function computeBalance(format: "group" | "one_to_one", people: Person[])
 
   const n = people.length;
   const sizeOk = format === "one_to_one" ? n === 2 : n >= 4 && n <= 6;
-  const sizeHint = format === "one_to_one" ? `${n} di 2 persone` : `${n} persone (servono 4–6)`;
+  const people = n === 1 ? "1 persona" : `${n} persone`;
+  const sizeHint = format === "one_to_one" ? `${n} di 2 persone` : sizeOkGroup(n) ? people : `${people} (servono 4–6)`;
 
   const labels: { text: string; ok: boolean }[] = [];
   if (genderUnbalanced) labels.push({ text: "Genere sbilanciato", ok: false });
