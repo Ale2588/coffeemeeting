@@ -1,0 +1,11 @@
+<!-- Supabase → Authentication → Email Templates → "Magic Link".
+     Oggetto: Il tuo link per entrare in CoffeeMeeting -->
+<div style="background:#F5EFE6;padding:32px 20px;font-family:Helvetica,Arial,sans-serif;color:#2B211B">
+  <div style="max-width:480px;margin:0 auto;background:#FFFCF7;border:1px solid #E3D8CA;border-radius:18px;padding:28px">
+    <p style="font-family:Georgia,serif;font-size:22px;font-weight:600;margin:0 0 20px">Coffee<i style="font-weight:500;color:#2F5D4E">Meeting</i></p>
+    <h1 style="font-family:Georgia,serif;font-weight:500;font-size:26px;line-height:1.15;margin:0 0 12px">Ecco il tuo link</h1>
+    <p style="font-size:16px;line-height:1.5;margin:0 0 20px">Tocca il pulsante per entrare nella tua pagina. Niente password.</p>
+    <p style="margin:0 0 20px"><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#2F5D4E;color:#FFFCF7;text-decoration:none;font-weight:600;padding:14px 22px;border-radius:13px">Entra</a></p>
+    <p style="font-size:14px;line-height:1.5;color:#6E6158;margin:0">Il link vale un'ora e funziona una volta sola. Se non l'hai chiesto tu, ignora questa email.</p>
+  </div>
+</div>
