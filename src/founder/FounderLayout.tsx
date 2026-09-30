@@ -20,6 +20,7 @@ export function useFounder(): FounderContext {
 
 const NAV = [
   { to: "/pannello", label: "Disponibilità", end: true },
+  { to: "/pannello/tavoli", label: "Tavoli" },
   { to: "/pannello/lista-attesa", label: "Lista d'attesa", counter: "waitlist" as const },
   { to: "/pannello/iscritti", label: "Iscritti" },
   { to: "/pannello/locali", label: "Locali" },

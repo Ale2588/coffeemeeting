@@ -77,7 +77,7 @@
 - Età minima 18 anni: confermata.
 - Genere e anno sbagliati: per ora l'iscritto scrive al fondatore. In produzione si valuterà un agente di controllo.
 
-## Fase 3 — Pannello del fondatore, base ✅ (in attesa di conferma)
+## Fase 3 — Pannello del fondatore, base ✅
 
 ### Fatto
 - **Database** (`supabase/migrations/20260930090000_founder_panel.sql`):
@@ -103,3 +103,43 @@
 ### Da configurare a mano
 - Eseguire nel SQL Editor la nuova migrazione `supabase/migrations/20260930090000_founder_panel.sql` (stesso procedimento della fase 2).
 - Se non l'hai già fatto: iscriviti dal sito e poi `update public.profiles set role = 'founder', status = 'active' where email = '<tua email>';`
+
+## Fase 4 — Tavoli e inviti ✅ (in attesa di conferma)
+
+### Decisioni del fondatore (30 settembre 2026)
+- Scadenza di risposta: 20:00 di due giorni prima.
+- Fino alla fase 5 si conferma senza pagare; l'interfaccia lo dice ("Fase di prova: nessun addebito").
+- Degli altri partecipanti si vedono nome e lavoro solo dopo aver confermato, e solo di chi ha confermato.
+
+### Fatto
+- **Database** (`supabase/migrations/20260930120000_meetups_and_invitations.sql`):
+  - `app_settings`: scadenza di risposta (giorni prima e ora) e ore di disdetta gratuita, configurabili;
+  - `meetups` (tavoli: zona, slot, data, formato, locale, stato bozza/inviato/annullato, inizio e scadenza calcolati in Europe/Rome) e `invitations`;
+  - l'iscritto non legge direttamente tavoli, inviti o locali: usa `my_invitations` (senza le note del locale), `my_meetup_companions` (solo nome e lavoro), `confirm_invitation`, `cancel_invitation`;
+  - il fondatore: `founder_save_meetup` (bozze), `founder_send_meetup` (4–6 persone per il gruppo, 2 per l'uno a uno, locale obbligatorio), `founder_add_participant` (almeno 24 ore per rispondere a chi entra tardi), `founder_cancel_meetup`, `founder_breakfast_counts`;
+  - un invito in attesa oltre la scadenza risulta scaduto subito; `expire_overdue_invitations()` lo rende persistente se programmato con pg_cron (facoltativo);
+  - nessuno può stare in due tavoli nello stesso giorno e orario.
+- **Test del database**: `supabase/tests/phase4_test.sql` (visibilità, validazioni, orari in Europe/Rome, conferma, compagni, scadenza, disdetta entro e oltre le 12 ore, aggiunta tardiva, sospesi, annullamento, colazioni fatte). `npm run test:db` passa per le fasi 2–4.
+- **Pannello → Tavoli**:
+  - bozze, inviti inviati (con "N di M confermati" e stato di ciascun invito), passati e annullati;
+  - nuovo tavolo: zona, orario, data (prossime 8 date dello slot, "tardi" se la scadenza è già passata), formato, locale (prima quelli della zona e dell'orario), partecipanti suggeriti (zona, orario e formato compatibili, non in pausa, non già occupati), con "prima volta" e genere · età; opzione per mostrare anche gli altri;
+  - colonna di equilibrio: barra del genere (non valutata per l'uno a uno; "Altro" e "Preferisco non dirlo" non pesano), fascia e scarto d'età, numero di persone; etichette "Equilibrato", "Genere sbilanciato" (≥75%), "Età molto distanti" (> 25 anni);
+  - "Invia inviti" con conferma; "Aggiungi una persona" a un tavolo inviato; "Annulla tavolo".
+- **Iscritto**:
+  - pagina dell'account: prossimi inviti con stato e scadenza, colazioni fatte;
+  - pagina dell'invito (`/invito/:id`): biglietto con giorno e ora, locale, indirizzo e link alla mappa, persone al tavolo, durata, prezzo (segnaposto); "Aggiungi al calendario" (.ics) e Google Calendar; scadenza di risposta; conferma; disdetta sempre visibile con la regola delle 12 ore e cosa succede ai soldi;
+  - tavolo confermato: timbro "Confermato", nome e lavoro di chi ha confermato;
+  - stati: invito scaduto (con rimando alla pausa), disdetto, tavolo annullato dal fondatore, colazione conclusa.
+- Colonna "Colazioni" nella pagina Iscritti del pannello.
+- Provato nel browser (1280px e 375px) con Supabase simulato: composizione, equilibrio, invio, invito, file .ics (7:45 Roma = 05:45 UTC), conferma, compagni, disdetta, scaduto. Nessun errore in console.
+
+### Manca / rimandato
+- Pagamento alla conferma e rimborso: fase 5.
+- "Attiva promemoria" nell'invito scaduto e tutte le email (nuovo invito, promemoria, conferma, disdetta): fase 7.
+- Riscontro dopo la colazione: fase 6.
+- Abbonamento come condizione per ricevere inviti dopo la prima colazione: fase 5.
+
+### Da configurare a mano
+- Eseguire nel SQL Editor `supabase/migrations/20260930120000_meetups_and_invitations.sql`.
+- Facoltativo: rendere persistenti gli inviti scaduti ogni 10 minuti (Database → Extensions → attiva `pg_cron`, poi nel SQL Editor):
+  `select cron.schedule('scadenza-inviti', '*/10 * * * *', $$select public.expire_overdue_invitations()$$);`

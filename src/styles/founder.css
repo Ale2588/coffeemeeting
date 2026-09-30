@@ -322,3 +322,141 @@
   color: var(--ink);
   font-weight: 500;
 }
+
+/* ---------- Tavoli ---------- */
+.meetups {
+  display: grid;
+  gap: 16px;
+}
+
+.meetup-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: 18px;
+}
+
+.meetup-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.plist {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+}
+
+.plist li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14.5px;
+}
+
+.plist .meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.first-time {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--green-tint);
+  color: var(--ink);
+  border-radius: var(--radius-pill);
+  padding: 2px 7px;
+  margin-left: 6px;
+}
+
+.balance > p + p,
+.balance > .bar + p {
+  margin-top: 2px;
+}
+
+.balance .label-mono {
+  margin-top: 12px;
+}
+
+.balance .label-mono:first-child {
+  margin-top: 0;
+}
+
+.bar {
+  display: flex;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  margin: 8px 0 4px;
+  background: var(--line);
+}
+
+.bar i:first-child {
+  background: var(--green);
+}
+
+.bar i:last-child {
+  background: var(--ochre);
+}
+
+.candidate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--tap-min);
+  padding: 8px 12px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+  font-size: 14.5px;
+}
+
+.candidate:first-child {
+  border-top: 0;
+}
+
+.candidate input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--green);
+  flex: none;
+}
+
+.candidate__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.meetup-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 28px;
+  align-items: start;
+}
+
+.meetup-form__aside {
+  position: sticky;
+  top: 16px;
+}
+
+@media (max-width: 1000px) {
+  .meetup-card,
+  .meetup-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .meetup-form__aside {
+    position: static;
+  }
+}

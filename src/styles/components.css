@@ -431,3 +431,178 @@ select.input {
   color: var(--ink-3);
   font-size: 13.5px;
 }
+
+/* ---------- Biglietto dell'invito ---------- */
+.ticket {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  margin-top: 18px;
+}
+
+.ticket__top {
+  padding: 22px 20px 20px;
+}
+
+.ticket__day {
+  font-family: var(--font-serif);
+  font-size: clamp(32px, 10vw, 44px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-top: 10px;
+}
+
+.ticket__time {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 64px;
+  line-height: 0.95;
+  color: var(--green);
+  letter-spacing: -0.03em;
+  margin-top: 4px;
+}
+
+.ticket__perf {
+  border-top: 2px dashed var(--line);
+  margin: 0 14px;
+  position: relative;
+}
+
+.ticket__perf::before,
+.ticket__perf::after {
+  content: "";
+  position: absolute;
+  top: -12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.ticket__perf::before {
+  left: -26px;
+  clip-path: inset(0 0 0 50%);
+}
+
+.ticket__perf::after {
+  right: -26px;
+  clip-path: inset(0 50% 0 0);
+}
+
+.ticket__bottom {
+  padding: 18px 20px 20px;
+}
+
+.ticket--void .ticket__day,
+.ticket--void .ticket__time {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  color: var(--ink-3);
+}
+
+.ticket__stamp {
+  position: absolute;
+  right: 16px;
+  top: 18px;
+  transform: rotate(-8deg);
+  border: 2px solid var(--green);
+  color: var(--green);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.deadline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+  font-size: 14.5px;
+  color: var(--ink-2);
+}
+
+.cancel-block {
+  margin-top: 26px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+
+.cancel-block > p {
+  font-size: 14.5px;
+  color: var(--ink-2);
+  margin-bottom: 12px;
+}
+
+.sheet {
+  background: var(--terra-tint-2);
+  border: 1px solid var(--terra-tint);
+  border-radius: var(--radius-card);
+  padding: 18px;
+}
+
+.sheet p {
+  font-size: 15px;
+  margin-top: 8px;
+}
+
+.companions {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+}
+
+.companions li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.companions .name {
+  font-family: var(--font-serif);
+  font-size: 19px;
+}
+
+.companions .job {
+  color: var(--ink-3);
+  font-size: 14px;
+}
+
+.invite-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: grid;
+  gap: 10px;
+}
+
+.invite-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-box);
+  padding: 14px 16px;
+  min-height: 64px;
+}
+
+.invite-row__when {
+  font-family: var(--font-serif);
+  font-size: 19px;
+}
+
+.invite-row__where {
+  font-size: 14px;
+  color: var(--ink-3);
+}

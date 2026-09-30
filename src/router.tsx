@@ -3,6 +3,8 @@ import { RequireAuth } from "./auth/RequireAuth";
 import { RouteErrorScreen } from "./components/ErrorScreen";
 import { AvailabilityPage } from "./founder/AvailabilityPage";
 import { FounderLayout } from "./founder/FounderLayout";
+import { MeetupFormPage } from "./founder/MeetupFormPage";
+import { MeetupsPage } from "./founder/MeetupsPage";
 import { MembersPage } from "./founder/MembersPage";
 import { RequireFounder } from "./founder/RequireFounder";
 import { VenueFormPage } from "./founder/VenueFormPage";
@@ -12,6 +14,7 @@ import { PublicLayout } from "./layouts/PublicLayout";
 import { AuthCallbackPage } from "./pages/AuthCallbackPage";
 import { ComponentsPage } from "./pages/ComponentsPage";
 import { HomePage } from "./pages/HomePage";
+import { InvitationPage } from "./pages/InvitationPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MemberPage } from "./pages/MemberPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -28,6 +31,7 @@ const children: RouteObject[] = [
     children: [
       { path: "account", element: <MemberPage /> },
       { path: "account/preferenze", element: <PreferencesPage /> },
+      { path: "invito/:id", element: <InvitationPage /> },
     ],
   },
   { path: "*", element: <NotFoundPage /> },
@@ -48,6 +52,9 @@ const founderRoutes: RouteObject = {
           element: <FounderLayout />,
           children: [
             { index: true, element: <AvailabilityPage /> },
+            { path: "tavoli", element: <MeetupsPage /> },
+            { path: "tavoli/nuovo", element: <MeetupFormPage /> },
+            { path: "tavoli/:id", element: <MeetupFormPage /> },
             { path: "lista-attesa", element: <WaitlistPage /> },
             { path: "iscritti", element: <MembersPage /> },
             { path: "locali", element: <VenuesPage /> },
