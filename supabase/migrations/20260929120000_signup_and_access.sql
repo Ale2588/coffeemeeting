@@ -36,6 +36,7 @@ create table public.zones (
   active boolean not null default true,
   sort_order smallint not null default 0
 );
+alter table public.zones enable row level security;
 
 create table public.slots (
   id smallint generated always as identity primary key,
@@ -47,6 +48,7 @@ create table public.slots (
   active boolean not null default true,
   unique (weekday, start_time)
 );
+alter table public.slots enable row level security;
 
 -- Valori provvisori dalla specifica, sezione 3 ("da confermare").
 insert into public.zones (name, sort_order) values
@@ -73,6 +75,7 @@ create table public.profiles (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+alter table public.profiles enable row level security;
 
 create index profiles_status_idx on public.profiles (status);
 
@@ -81,12 +84,14 @@ create table public.profile_zones (
   zone_id smallint not null references public.zones (id),
   primary key (profile_id, zone_id)
 );
+alter table public.profile_zones enable row level security;
 
 create table public.profile_slots (
   profile_id uuid not null references public.profiles (id) on delete cascade,
   slot_id smallint not null references public.slots (id),
   primary key (profile_id, slot_id)
 );
+alter table public.profile_slots enable row level security;
 
 -- Dati usati solo dal fondatore per bilanciare i tavoli e per le statistiche.
 create table public.profile_private (
@@ -94,6 +99,7 @@ create table public.profile_private (
   gender public.gender not null,
   birth_year smallint not null check (birth_year between 1900 and 2100)
 );
+alter table public.profile_private enable row level security;
 
 -- Iscrizioni inviate dal modulo ma con email non ancora confermata dal link.
 -- Diventano un profilo quando l'email viene confermata. Nessun accesso dai client.
@@ -108,6 +114,7 @@ create table public.pending_signups (
   birth_year smallint not null,
   created_at timestamptz not null default now()
 );
+alter table public.pending_signups enable row level security;
 
 -- ---------------------------------------------------------------------------
 -- Funzioni di supporto
@@ -384,15 +391,10 @@ $$;
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security
+-- La RLS è attivata subito dopo ogni create table (così la vede anche il controllo del
+-- SQL Editor di Supabase); qui ci sono le policy.
 -- ---------------------------------------------------------------------------
 
-alter table public.zones enable row level security;
-alter table public.slots enable row level security;
-alter table public.profiles enable row level security;
-alter table public.profile_zones enable row level security;
-alter table public.profile_slots enable row level security;
-alter table public.profile_private enable row level security;
-alter table public.pending_signups enable row level security;
 
 create policy "zones: attive visibili a tutti, tutte al fondatore"
   on public.zones for select to anon, authenticated
