@@ -1,5 +1,6 @@
 import { createBrowserRouter, type RouteObject } from "react-router";
 import { RequireAuth } from "./auth/RequireAuth";
+import { RouteErrorScreen } from "./components/ErrorScreen";
 import { AvailabilityPage } from "./founder/AvailabilityPage";
 import { FounderLayout } from "./founder/FounderLayout";
 import { MembersPage } from "./founder/MembersPage";
@@ -60,7 +61,7 @@ const founderRoutes: RouteObject = {
 };
 
 export const router = createBrowserRouter([
-  { element: <PublicLayout />, children },
+  { element: <PublicLayout />, errorElement: <RouteErrorScreen />, children },
   // Il pannello ha un layout largo proprio, fuori dalla colonna mobile.
-  founderRoutes,
+  { ...founderRoutes, errorElement: <RouteErrorScreen /> },
 ]);

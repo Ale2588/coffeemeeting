@@ -4,6 +4,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router/dom";
 import { AuthProvider } from "./auth/AuthProvider";
+import { ErrorBoundary } from "./components/ErrorScreen";
 import { router } from "./router";
 import "./styles/tokens.css";
 import "./styles/base.css";
@@ -12,8 +13,10 @@ import "./styles/components.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );

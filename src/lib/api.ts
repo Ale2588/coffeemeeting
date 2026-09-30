@@ -1,5 +1,5 @@
 import type { AuthError } from "@supabase/supabase-js";
-import { supabase } from "./supabase";
+import { supabase, supabaseConfigError } from "./supabase";
 
 export type MeetingFormat = "group" | "one_to_one" | "both";
 export type Gender = "female" | "male" | "other" | "undisclosed";
@@ -63,7 +63,7 @@ export function toApiError(error: { message?: string } | null): ApiError {
 }
 
 export function client() {
-  if (!supabase) throw new ApiError("Il servizio non è ancora configurato.");
+  if (!supabase) throw new ApiError(`Il servizio non è ancora configurato. ${supabaseConfigError ?? ""}`.trim());
   return supabase;
 }
 
