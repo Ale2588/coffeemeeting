@@ -32,10 +32,6 @@ export const PILOT = {
   durationMinutes: 45,
   groupSize: { min: 4, max: 6 },
   freeCancellationHours: 12,
-  /** Prezzo della colazione in euro. Da definire (specifica, sezione 10). */
-  breakfastPriceEur: null as number | null,
-  /** Prezzo mensile dell'abbonamento in euro. Da definire (feedback, punto 7). */
-  subscriptionMonthlyEur: null as number | null,
   /** Email di contatto per "Scrivici". Da fornire. */
   contactEmail: null as string | null,
   /** Validità del link di accesso. Deve coincidere con "Email OTP Expiration" su Supabase. */

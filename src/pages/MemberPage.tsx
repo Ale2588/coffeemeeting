@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { Button, ButtonLink } from "../components/Button";
 import { Card, Notice } from "../components/Card";
 import { ContactLink } from "../components/ContactLink";
@@ -11,7 +11,15 @@ import { useMyProfile } from "../features/useMyProfile";
 import { ApiError, setInvitePause, signOut, type MyProfile } from "../lib/api";
 import { addDaysIso, formatDateOnly, formatDateTime, formatDayTitle, formatTime, todayIso } from "../lib/dates";
 import { breakfastsDone, fetchMyInvitations, isPast, type MyInvitation } from "../lib/invitations";
-import { slotLabel } from "../lib/format";
+import { formatCents, slotLabel } from "../lib/format";
+import { CloseAccount } from "../features/CloseAccount";
+import {
+  fetchMySubscription,
+  openBillingPortal,
+  reopenAccount,
+  subscriptionView,
+  type MySubscription,
+} from "../lib/subscription";
 import { FORMAT_LABEL } from "../lib/labels";
 
 export function MemberPage() {
@@ -72,7 +80,7 @@ export function MemberPage() {
 function ProfileByStatus({ profile, onChanged }: { profile: MyProfile; onChanged: () => Promise<void> }) {
   switch (profile.status) {
     case "waitlisted":
-      return <Waitlisted profile={profile} />;
+      return <Waitlisted profile={profile} onChanged={onChanged} />;
     case "active":
     case "warned":
       return <Active profile={profile} onChanged={onChanged} />;
@@ -87,7 +95,48 @@ function ProfileByStatus({ profile, onChanged }: { profile: MyProfile; onChanged
           text="La tua iscrizione non è stata accettata. Se pensi che sia un errore, scrivici."
         />
       );
+    case "closed":
+      return <AccountClosed profile={profile} onChanged={onChanged} />;
   }
+}
+
+function AccountClosed({ profile, onChanged }: { profile: MyProfile; onChanged: () => Promise<void> }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const purgeOn = profile.closedAt ? addDaysIso(profile.closedAt.slice(0, 10), 30) : null;
+  const canReopen = purgeOn !== null && purgeOn > todayIso();
+
+  async function reopen() {
+    setBusy(true);
+    setError(null);
+    try {
+      await reopenAccount();
+      await onChanged();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Qualcosa non ha funzionato. Riprova tra poco.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="stack">
+      <StatusTag tone="neutral">Account chiuso</StatusTag>
+      <h1>Hai chiuso l'account.</h1>
+      <p className="lead">
+        Non ricevi più inviti e non ti addebitiamo più nulla.
+        {purgeOn && ` Nome, email e preferenze verranno cancellati ${formatDateOnly(purgeOn)}.`}
+      </p>
+      {error && <Notice tone="error">{error}</Notice>}
+      {canReopen && (
+        <>
+          <p>Ci hai ripensato? Fino ad allora puoi riaprirlo com'era.</p>
+          <Button variant="secondary" block loading={busy} onClick={reopen}>
+            Riapri l'account
+          </Button>
+        </>
+      )}
+    </div>
+  );
 }
 
 function PreferencesSummary({ profile }: { profile: MyProfile }) {
@@ -108,7 +157,7 @@ function PreferencesSummary({ profile }: { profile: MyProfile }) {
 }
 
 /** A3 — Lista d'attesa. Nessuna posizione in coda. */
-function Waitlisted({ profile }: { profile: MyProfile }) {
+function Waitlisted({ profile, onChanged }: { profile: MyProfile; onChanged: () => Promise<void> }) {
   return (
     <div className="stack">
       <StatusTag tone="neutral">In lista d'attesa</StatusTag>
@@ -121,6 +170,7 @@ function Waitlisted({ profile }: { profile: MyProfile }) {
       <ButtonLink to="/account/preferenze" variant="secondary" block>
         Modifica preferenze
       </ButtonLink>
+      <CloseAccount asLink onClosed={() => void onChanged()} />
     </div>
   );
 }
@@ -142,11 +192,9 @@ function Active({ profile, onChanged }: { profile: MyProfile; onChanged: () => P
         <UpcomingInvitations paused={paused} resumeOn={profile.invitesResumeOn} />
       </section>
 
-      <section className="section" aria-labelledby="sub-title">
+      <section className="section stack" aria-labelledby="sub-title">
         <h3 id="sub-title">Abbonamento</h3>
-        <p style={{ color: "var(--ink-2)", marginTop: 8 }}>
-          La prima colazione non lo richiede: la paghi e basta. Dopo, se vuoi continuare, ti proponiamo l'abbonamento.
-        </p>
+        <SubscriptionSection />
       </section>
 
       <section className="section stack" aria-labelledby="prefs-title">
@@ -161,8 +209,138 @@ function Active({ profile, onChanged }: { profile: MyProfile; onChanged: () => P
         <h3 id="pause-title">Pausa</h3>
         <PauseControl paused={paused} onChanged={onChanged} />
       </section>
+
+      <section className="section stack" aria-labelledby="close-title-section">
+        <h3 id="close-title-section">Chiudere l'account</h3>
+        <CloseAccount onClosed={() => void onChanged()} />
+      </section>
     </>
   );
+}
+
+const SUB_POLL_MS = 2000;
+const SUB_POLL_MAX = 10;
+
+/** Stato dell'abbonamento con l'azione giusta: attiva, rinnova, gestisci. */
+function SubscriptionSection() {
+  const [params, setParams] = useSearchParams();
+  const justPaid = params.get("abbonamento") === "attivato";
+  const [sub, setSub] = useState<MySubscription | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let n = 0;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const load = () =>
+      fetchMySubscription()
+        .then((s) => {
+          setSub(s);
+          // Ritorno da Stripe: l'attivazione arriva dal webhook, di solito in pochi secondi.
+          if (justPaid && (s.active || ++n >= SUB_POLL_MAX)) {
+            clearInterval(timer);
+            setParams({}, { replace: true });
+          }
+        })
+        .catch(() => setError("Impossibile caricare l'abbonamento."));
+    void load();
+    if (justPaid) timer = setInterval(load, SUB_POLL_MS);
+    return () => clearInterval(timer);
+  }, [justPaid, setParams]);
+
+  async function portal() {
+    setBusy(true);
+    try {
+      window.location.assign(await openBillingPortal());
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Qualcosa non ha funzionato. Riprova tra poco.");
+      setBusy(false);
+    }
+  }
+
+  if (error) return <Notice tone="error">{error}</Notice>;
+  if (!sub) return <LoadingState />;
+  if (justPaid && !sub.active) return <LoadingState label="Pagamento ricevuto da Stripe: stiamo attivando l'abbonamento…" />;
+
+  const v = subscriptionView(sub);
+  const planLabel = (p: "monthly" | "yearly") => (p === "monthly" ? "mensile" : "annuale");
+  const manage = (
+    <Button variant="secondary" block loading={busy} onClick={portal}>
+      Gestisci l'abbonamento
+    </Button>
+  );
+
+  switch (v.kind) {
+    case "not_needed":
+      return (
+        <p style={{ color: "var(--ink-2)" }}>
+          La prima colazione non lo richiede: la paghi e basta. Dopo, se vuoi continuare, ti proponiamo l'abbonamento (
+          {formatCents(sub.monthlyCents)} al mese o {formatCents(sub.yearlyCents)} all'anno).
+        </p>
+      );
+    case "inactive":
+      return (
+        <>
+          <div className="pills">
+            <StatusTag tone="warning">Abbonamento non attivo</StatusTag>
+          </div>
+          <p style={{ color: "var(--ink-2)" }}>
+            Dalla seconda colazione serve l'abbonamento: senza, non ricevi nuovi inviti.
+            {sub.reminderOn && ` Te lo riproponiamo ${formatDateOnly(sub.reminderOn)}.`}
+          </p>
+          <ButtonLink to="/abbonamento" block>
+            Attiva
+          </ButtonLink>
+        </>
+      );
+    case "expired":
+      return (
+        <>
+          <div className="pills">
+            <StatusTag tone="warning">Abbonamento scaduto</StatusTag>
+          </div>
+          <p style={{ color: "var(--ink-2)" }}>Senza abbonamento non ricevi nuovi inviti.</p>
+          <ButtonLink to="/abbonamento" block>
+            Rinnova
+          </ButtonLink>
+        </>
+      );
+    case "active":
+      return (
+        <>
+          <div className="pills">
+            <StatusTag>Abbonamento attivo · {planLabel(v.plan)}</StatusTag>
+          </div>
+          {v.renewsOn && <p style={{ color: "var(--ink-2)" }}>Si rinnova {formatDateTime(v.renewsOn)}.</p>}
+          {manage}
+        </>
+      );
+    case "ending":
+      return (
+        <>
+          <div className="pills">
+            <StatusTag tone="neutral">Attivo fino alla scadenza · {planLabel(v.plan)}</StatusTag>
+          </div>
+          <p style={{ color: "var(--ink-2)" }}>
+            Hai disdetto: resta attivo {v.endsOn ? `fino a ${formatDateTime(v.endsOn)}` : "fino alla fine del periodo pagato"}, poi
+            non si rinnova e non ti addebitiamo più nulla.
+          </p>
+          {manage}
+        </>
+      );
+    case "past_due":
+      return (
+        <>
+          <div className="pills">
+            <StatusTag tone="warning">Rinnovo non riuscito</StatusTag>
+          </div>
+          <p style={{ color: "var(--ink-2)" }}>
+            Il pagamento del rinnovo non è andato a buon fine. Aggiorna la carta: Stripe riprova l'addebito nei prossimi giorni.
+          </p>
+          {manage}
+        </>
+      );
+  }
 }
 
 function UpcomingInvitations({ paused, resumeOn }: { paused: boolean; resumeOn: string | null }) {

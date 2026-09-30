@@ -1,3 +1,4 @@
+import { callServer } from "../lib/serverApi";
 import { byTime, client, toApiError, type Gender, type MeetingFormat, type MemberRole, type MemberStatus, type Slot, type Zone } from "../lib/api";
 
 export type FounderMember = {
@@ -301,7 +302,20 @@ export async function addParticipant(meetupId: number, profileId: string): Promi
   if (error) throw toApiError(error);
 }
 
-export async function cancelMeetup(id: number): Promise<void> {
-  const { error } = await client().rpc("founder_cancel_meetup", { p_id: id });
+/** Annulla un tavolo; il server rimborsa chi aveva pagato. */
+export async function cancelMeetup(id: number): Promise<{ refunded: number; refundFailed: number }> {
+  return callServer("founder-cancel-meetup", { meetupId: id });
+}
+
+export type SubscriptionState = { active: boolean; needsSubscription: boolean; plan: "monthly" | "yearly" | null };
+
+export async function fetchSubscriptionStates(): Promise<Map<string, SubscriptionState>> {
+  const { data, error } = await client().rpc("founder_subscription_states");
   if (error) throw toApiError(error);
+  return new Map(
+    (data as { profile_id: string; active: boolean; needs_subscription: boolean; plan: "monthly" | "yearly" | null }[]).map((r) => [
+      r.profile_id,
+      { active: r.active, needsSubscription: r.needs_subscription, plan: r.plan },
+    ]),
+  );
 }

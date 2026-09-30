@@ -24,7 +24,8 @@ Se due documenti si contraddicono e l'ordine sopra non basta a decidere, fermati
 ## Stack
 - Vite + React + TypeScript, React Router.
 - CSS con variabili (token dalla specifica, sezione 7), niente framework UI pesanti.
-- Supabase: autenticazione con link via email, Postgres, Row Level Security su tutte le tabelle, Edge Functions per email, pagamenti e scadenze.
+- Supabase: autenticazione con link via email, Postgres, Row Level Security su tutte le tabelle.
+- Funzioni server su Vercel (cartella `api/`) per pagamenti, webhook e, più avanti, email: si pubblicano con il sito a ogni merge (decisione del fondatore, 1 ottobre 2026, al posto delle Edge Functions di Supabase). La logica di dominio resta in funzioni SQL testate; le funzioni server parlano con i servizi esterni.
 - Stripe Checkout e webhook, in **modalità di prova** finché il fondatore non dice il contrario.
 - Resend per le email transazionali.
 - Deploy su Vercel.

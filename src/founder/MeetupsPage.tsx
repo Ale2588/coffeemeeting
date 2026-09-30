@@ -126,12 +126,12 @@ function MeetupCard({ meetup: m, data, reload, readOnly }: { meetup: Meetup; dat
 
   const addable =
     m.status === "sent"
-      ? candidatesFor(data.members, data.meetups, { id: m.id, zoneId: m.zoneId, slotId: m.slotId, date: m.date, format: m.format }).filter(
+      ? candidatesFor(data.members, data.meetups, data.subscriptions, { id: m.id, zoneId: m.zoneId, slotId: m.slotId, date: m.date, format: m.format }).filter(
           (c) => c.reasons.length === 0 && !c.busy && !m.invitations.some((i) => i.profileId === c.member.id),
         )
       : [];
 
-  async function run(action: () => Promise<void>, done: string) {
+  async function run(action: () => Promise<unknown>, done: string) {
     setBusy(true);
     setErr(null);
     try {
@@ -238,7 +238,7 @@ function MeetupCard({ meetup: m, data, reload, readOnly }: { meetup: Meetup; dat
               <p>
                 {m.status === "draft"
                   ? "Eliminare questa bozza?"
-                  : "Annullare il tavolo? Chi ha già ricevuto l'invito vedrà che è stato annullato. Nessun addebito per nessuno."}
+                  : "Annullare il tavolo? Chi ha ricevuto l'invito vedrà che è stato annullato; chi aveva già pagato riceve il rimborso completo."}
               </p>
             )}
             <div className="button-row">
@@ -249,7 +249,14 @@ function MeetupCard({ meetup: m, data, reload, readOnly }: { meetup: Meetup; dat
                 onClick={() =>
                   confirming === "send"
                     ? run(() => sendMeetup(m.id), "Inviti inviati.")
-                    : run(() => cancelMeetup(m.id), m.status === "draft" ? "Bozza eliminata." : "Tavolo annullato.")
+                    : run(async () => {
+                        const r = await cancelMeetup(m.id);
+                        if (r.refundFailed > 0) {
+                          throw new ApiError(
+                            `Tavolo annullato, ma ${r.refundFailed} rimborsi non sono partiti: falli a mano dal pannello di Stripe.`,
+                          );
+                        }
+                      }, m.status === "draft" ? "Bozza eliminata." : "Tavolo annullato: chi aveva pagato riceve il rimborso.")
                 }
               >
                 {confirming === "send" ? "Sì, invia" : m.status === "draft" ? "Sì, elimina" : "Sì, annulla il tavolo"}

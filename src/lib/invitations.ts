@@ -1,4 +1,5 @@
 import { client, toApiError, type MeetingFormat } from "./api";
+import { callServer } from "./serverApi";
 
 export type InvitationStatus = "pending" | "confirmed" | "expired" | "cancelled";
 
@@ -17,7 +18,12 @@ export type MyInvitation = {
   venueName: string | null;
   venueAddress: string | null;
   participants: number;
+  priceCents: number;
+  /** Ultimo tentativo di pagamento per questo invito, se c'è. */
+  payment: { status: PaymentStatus; amountCents: number; cardLast4: string | null } | null;
 };
+
+export type PaymentStatus = "pending" | "succeeded" | "failed" | "expired" | "refunded";
 
 type Row = {
   invitation_id: number;
@@ -33,6 +39,10 @@ type Row = {
   venue_name: string | null;
   venue_address: string | null;
   participants: number;
+  price_cents: number;
+  payment_status: PaymentStatus | null;
+  payment_amount_cents: number | null;
+  card_last4: string | null;
 };
 
 export async function fetchMyInvitations(): Promise<MyInvitation[]> {
@@ -55,6 +65,10 @@ export async function fetchMyInvitations(): Promise<MyInvitation[]> {
       venueName: r.venue_name,
       venueAddress: r.venue_address,
       participants: r.participants,
+      priceCents: r.price_cents,
+      payment: r.payment_status
+        ? { status: r.payment_status, amountCents: r.payment_amount_cents ?? r.price_cents, cardLast4: r.card_last4 }
+        : null,
     };
   });
 }
@@ -65,18 +79,17 @@ export async function fetchCompanions(invitationId: number): Promise<{ firstName
   return (data as { first_name: string; job: string }[]).map((r) => ({ firstName: r.first_name, job: r.job }));
 }
 
-/** Restituisce il nuovo stato: "confirmed", oppure "expired" se la scadenza è passata. */
-export async function confirmInvitation(invitationId: number): Promise<InvitationStatus> {
-  const { data, error } = await client().rpc("confirm_invitation", { p_invitation_id: invitationId });
-  if (error) throw toApiError(error);
-  return data as InvitationStatus;
+/** Apre il pagamento Stripe della colazione: restituisce l'indirizzo a cui andare. */
+export async function startBreakfastCheckout(invitationId: number): Promise<string> {
+  const { url } = await callServer<{ url: string }>("checkout-breakfast", { invitationId });
+  return url;
 }
 
-/** Restituisce true se la disdetta è avvenuta entro la finestra gratuita. */
-export async function cancelInvitation(invitationId: number): Promise<boolean> {
-  const { data, error } = await client().rpc("cancel_invitation", { p_invitation_id: invitationId });
-  if (error) throw toApiError(error);
-  return data as boolean;
+export type CancelResult = { free: boolean; refundedCents: number | null; refundFailed: boolean };
+
+/** Disdetta; se entro la disdetta gratuita e già pagata, il server fa il rimborso. */
+export async function cancelInvitation(invitationId: number): Promise<CancelResult> {
+  return callServer<CancelResult>("cancel-invitation", { invitationId });
 }
 
 /** Invito concluso: il tavolo è già finito. */

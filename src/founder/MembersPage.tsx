@@ -7,7 +7,7 @@ import { useToast } from "../components/Toast";
 import { ApiError, type MemberStatus } from "../lib/api";
 import { FORMAT_LABEL } from "../lib/labels";
 import { zoneNames } from "./catalogLabels";
-import { fetchBreakfastCounts, fetchMembers, setMemberStatus, type FounderMember } from "./founderApi";
+import { fetchBreakfastCounts, fetchMembers, fetchSubscriptionStates, setMemberStatus, type FounderMember } from "./founderApi";
 import { useFounder } from "./FounderLayout";
 import { genderAge, STATUS_LABEL, STATUS_ORDER, STATUS_TONE } from "./labels";
 import { useAsync } from "./useAsync";
@@ -19,8 +19,8 @@ export function MembersPage() {
   const { catalog, refreshCounts } = useFounder();
   const toast = useToast();
   const load = useCallback(async () => {
-    const [members, breakfasts] = await Promise.all([fetchMembers(), fetchBreakfastCounts()]);
-    return members.map((m) => ({ ...m, breakfasts: breakfasts.get(m.id) ?? 0 }));
+    const [members, breakfasts, subs] = await Promise.all([fetchMembers(), fetchBreakfastCounts(), fetchSubscriptionStates()]);
+    return members.map((m) => ({ ...m, breakfasts: breakfasts.get(m.id) ?? 0, subscription: subs.get(m.id) }));
   }, []);
   const { data, error, loading, reload } = useAsync(load);
   const [filter, setFilter] = useState<Filter>("all");
@@ -63,7 +63,7 @@ export function MembersPage() {
       <title>Iscritti · Pannello · CoffeeMeeting</title>
       <div>
         <h2>Iscritti</h2>
-        <p className="admin__intro">Colazioni: tavoli confermati già iniziati. La media voti arriva con il riscontro (fase 6).</p>
+        <p className="admin__intro">Colazioni: tavoli confermati già iniziati. "Da attivare": ha già una colazione e senza abbonamento non può ricevere inviti. La media voti arriva con il riscontro (fase 6).</p>
       </div>
 
       <div className="filters" role="group" aria-label="Filtra per stato">
@@ -117,6 +117,7 @@ export function MembersPage() {
                 <th scope="col">Formato</th>
                 <th scope="col">Genere · età</th>
                 <th scope="col">Colazioni</th>
+                <th scope="col">Abbonamento</th>
                 <th scope="col">Stato</th>
                 <th scope="col">Cambia stato</th>
               </tr>
@@ -124,7 +125,7 @@ export function MembersPage() {
             <tbody>
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="empty">
+                  <td colSpan={9} className="empty">
                     Nessun iscritto in questo stato.
                   </td>
                 </tr>
@@ -147,6 +148,15 @@ export function MembersPage() {
                       <span aria-label={ga.long}>{ga.short}</span>
                     </td>
                     <td className="mono">{m.breakfasts}</td>
+                    <td>
+                      {m.subscription?.active ? (
+                        <StatusTag>{m.subscription.plan === "yearly" ? "Annuale" : "Mensile"}</StatusTag>
+                      ) : m.subscription?.needsSubscription ? (
+                        <StatusTag tone="warning">Da attivare</StatusTag>
+                      ) : (
+                        <span className="muted">—</span>
+                      )}
+                    </td>
                     <td>
                       <StatusTag tone={STATUS_TONE[m.status]}>{STATUS_LABEL[m.status]}</StatusTag>
                     </td>

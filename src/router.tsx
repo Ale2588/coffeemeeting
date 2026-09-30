@@ -20,6 +20,7 @@ import { MemberPage } from "./pages/MemberPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PreferencesPage } from "./pages/PreferencesPage";
 import { SignupPage } from "./pages/SignupPage";
+import { SubscriptionPage } from "./pages/SubscriptionPage";
 
 const children: RouteObject[] = [
   { index: true, element: <HomePage /> },
@@ -32,6 +33,7 @@ const children: RouteObject[] = [
       { path: "account", element: <MemberPage /> },
       { path: "account/preferenze", element: <PreferencesPage /> },
       { path: "invito/:id", element: <InvitationPage /> },
+      { path: "abbonamento", element: <SubscriptionPage /> },
     ],
   },
   { path: "*", element: <NotFoundPage /> },

@@ -9,6 +9,7 @@ export const STATUS_LABEL: Record<MemberStatus, string> = {
   suspended: "Sospeso",
   expelled: "Espulso",
   rejected: "Rifiutato",
+  closed: "Account chiuso",
 };
 
 export const STATUS_TONE: Record<MemberStatus, StatusTone> = {
@@ -18,10 +19,11 @@ export const STATUS_TONE: Record<MemberStatus, StatusTone> = {
   suspended: "warning",
   expelled: "warning",
   rejected: "neutral",
+  closed: "neutral",
 };
 
 /** Ordine dei filtri nella pagina Iscritti. */
-export const STATUS_ORDER: MemberStatus[] = ["active", "warned", "suspended", "expelled", "waitlisted", "rejected"];
+export const STATUS_ORDER: MemberStatus[] = ["active", "warned", "suspended", "expelled", "waitlisted", "rejected", "closed"];
 
 const GENDER_SHORT: Record<Gender, string> = { female: "D", male: "U", other: "A", undisclosed: "—" };
 const GENDER_LONG: Record<Gender, string> = {

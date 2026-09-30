@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import { Price } from "../components/Price";
-import { PILOT } from "../config/pilot";
+import { formatCents } from "../lib/format";
 import { mapsUrl } from "../lib/calendar";
 import { formatDayTitle, formatTime } from "../lib/dates";
 import type { MyInvitation } from "../lib/invitations";
@@ -37,7 +36,7 @@ export function Ticket({ inv, voided, stamp }: Props) {
           <dd>circa {inv.durationMinutes} minuti</dd>
           <dt>Colazione</dt>
           <dd>
-            <Price amount={PILOT.breakfastPriceEur} />
+            {formatCents(inv.priceCents)}
           </dd>
         </dl>
       </div>

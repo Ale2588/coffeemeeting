@@ -104,7 +104,7 @@
 - Eseguire nel SQL Editor la nuova migrazione `supabase/migrations/20260930090000_founder_panel.sql` (stesso procedimento della fase 2).
 - Se non l'hai già fatto: iscriviti dal sito e poi `update public.profiles set role = 'founder', status = 'active' where email = '<tua email>';`
 
-## Fase 4 — Tavoli e inviti ✅ (in attesa di conferma)
+## Fase 4 — Tavoli e inviti ✅
 
 ### Decisioni del fondatore (30 settembre 2026)
 - Scadenza di risposta: 20:00 di due giorni prima.
@@ -143,3 +143,56 @@
 - Eseguire nel SQL Editor `supabase/migrations/20260930120000_meetups_and_invitations.sql`.
 - Facoltativo: rendere persistenti gli inviti scaduti ogni 10 minuti (Database → Extensions → attiva `pg_cron`, poi nel SQL Editor):
   `select cron.schedule('scadenza-inviti', '*/10 * * * *', $$select public.expire_overdue_invitations()$$);`
+
+## Fase 5 — Pagamenti e abbonamento ✅ (in attesa di conferma)
+
+### Decisioni del fondatore (1 ottobre 2026)
+- Funzioni server su Vercel (`api/`), al posto delle Edge Functions di Supabase. CLAUDE.md aggiornato.
+- Prezzi di prova: 8 € la colazione, 12 € al mese, 99 € all'anno, salvati in `app_settings`. La home mostra `[DA DEFINIRE]` finché `prices_public` è falso.
+- "Chiudi il mio account": niente più inviti da subito, dati personali cancellati dopo 30 giorni (riapribile fino ad allora), restano i dati di pagamento.
+- Disdetta dell'abbonamento: resta attivo fino alla fine del periodo pagato, poi non si rinnova.
+- Idea da studiare (in PRODUCT.md): prezzo della colazione deciso dal locale e prezzo massimo indicato dall'iscritto.
+- Nota sull'hosting: il piano gratuito di Vercel è per uso non commerciale. Va bene per le prove; al lancio serve il piano Pro o un altro hosting (es. Cloudflare Pages).
+
+### Fatto
+- **Database** (`supabase/migrations/20261001090000_payments_and_subscriptions.sql`):
+  - prezzi in `app_settings`, `public_prices()` per la home;
+  - `payments` (restano anche se l'account viene cancellato), `subscriptions`, `stripe_customers`, `stripe_events` (ogni evento Stripe elaborato una volta sola);
+  - la conferma di un invito passa solo dal pagamento; disdetta e annullamento del tavolo passano dal server (rimborsi);
+  - abbonamento obbligatorio dalla seconda colazione: il database rifiuta di invitare chi non è abbonato (`subscription_required`) e di fargli pagare la colazione;
+  - pagamento arrivato quando l'invito non vale più (scaduto prima dell'avvio del pagamento, tavolo annullato): rimborso automatico;
+  - chiusura dell'account (`svc_close_account`), riapertura entro 30 giorni (`reopen_my_account`), cancellazione dopo 30 giorni (`purge_closed_accounts`, da programmare);
+  - "Non ora, ricordamelo tra una settimana" salva la data (l'email arriva con la fase 7).
+- **Funzioni server** (`api/`): `checkout-breakfast`, `checkout-subscription`, `billing-portal` (portale Stripe per carta, ricevute, disdetta), `cancel-invitation`, `founder-cancel-meetup`, `close-account`, `stripe-webhook` (firma verificata).
+- **Test**: `npm run test:db` (fasi 2–5, ogni test dopo la migrazione della sua fase) e `npm run test:api` (21 test delle funzioni server con Stripe e Supabase finti).
+- **Interfaccia**:
+  - invito: "Conferma e paga 8 €" → Stripe → ritorno con attesa della conferma; carta rifiutata con ultime 4 cifre, "Riprova" e "Usa un altro metodo"; pagamento interrotto; "Pagato 8 € con la carta che termina con …";
+  - disdetta: rimborso completo entro le 12 ore, nessun rimborso dopo, nessun addebito se non pagato; testi diversi per ogni caso;
+  - `/abbonamento`: proposta con mensile e annuale, "Attiva l'abbonamento", "Non ora, ricordamelo tra una settimana", "Chiudi il mio account";
+  - pagina dell'iscritto: abbonamento non necessario / non attivo (Attiva) / scaduto (Rinnova) / attivo (Gestisci) / disdetto ma attivo fino alla scadenza / rinnovo non riuscito; chiusura e riapertura dell'account;
+  - home: prezzi reali solo se pubblici;
+  - pannello: annullamento del tavolo con rimborsi, colonna "Abbonamento" negli Iscritti, "senza abbonamento" tra i motivi dei candidati.
+- Provato nel browser (375px) con Stripe, Supabase e funzioni server simulati.
+
+### Non verificato qui
+- Il giro completo con Stripe vero (in questo ambiente Stripe non è raggiungibile): va provato dopo la configurazione, con le carte di prova qui sotto.
+
+### Manca / rimandato
+- Rimborso delle colazioni pagate alla sospensione di un account: fase 6.
+- Collegamento automatico "riscontro inviato → proposta di abbonamento": fase 6 (per ora la proposta si apre da "Attiva" nella pagina dell'iscritto).
+- Email (abbonamento attivato, rinnovo fallito, abbonamento scaduto, promemoria): fase 7.
+
+### Da configurare a mano (in quest'ordine)
+1. **Database**: eseguire nel SQL Editor `supabase/migrations/20261001090000_payments_and_subscriptions.sql`.
+2. **Stripe** (account gratuito, lasciare attiva la **modalità di prova**, interruttore "Test mode"):
+   - Developers → API keys → copia la **Secret key** (`sk_test_…`).
+   - Settings → Billing → **Customer portal** → attiva il portale in modalità di prova; consenti "Cancel subscriptions" (alla fine del periodo) e "Update payment methods".
+3. **Vercel** → progetto → Settings → Environment Variables (Production e Preview):
+   - `STRIPE_SECRET_KEY` = la secret key di prova;
+   - `SUPABASE_SERVICE_ROLE_KEY` = Supabase → Project Settings → API Keys → `service_role` (segreta: non condividerla con nessuno, nemmeno in chat).
+4. **Webhook Stripe**: Developers → Webhooks → Add endpoint → URL `https://<indirizzo-vercel>/api/stripe-webhook`, eventi: `checkout.session.completed`, `checkout.session.expired`, `checkout.session.async_payment_failed`, `payment_intent.payment_failed`, `charge.refunded`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`. Copia il **Signing secret** (`whsec_…`) in Vercel come `STRIPE_WEBHOOK_SECRET`.
+5. **Vercel** → Deployments → ultimo → Redeploy (le variabili nuove valgono dal deployment successivo).
+6. Facoltativo: cancellazione automatica degli account chiusi da 30 giorni (con `pg_cron` attivo):
+   `select cron.schedule('cancella-account-chiusi', '17 3 * * *', $$select public.purge_closed_accounts()$$);`
+7. Carte di prova: `4242 4242 4242 4242` (riesce), `4000 0000 0000 0002` (rifiutata); scadenza futura qualsiasi, CVC qualsiasi.
+8. Per rendere pubblici i prezzi in home, quando saranno definitivi: `update public.app_settings set prices_public = true;` (e gli importi in centesimi nelle colonne `*_cents`).

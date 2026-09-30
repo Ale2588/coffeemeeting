@@ -51,3 +51,8 @@ export function formatSlotTime(time: string): string {
 export function slotLabel(slot: { weekday: number; start_time: string }): string {
   return `${weekdayName(slot.weekday)} ${formatSlotTime(slot.start_time)}`;
 }
+
+/** Importo in centesimi → "8 €", "12,50 €". */
+export function formatCents(cents: number): string {
+  return formatEur(cents / 100);
+}

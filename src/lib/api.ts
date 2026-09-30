@@ -3,7 +3,7 @@ import { supabase, supabaseConfigError } from "./supabase";
 
 export type MeetingFormat = "group" | "one_to_one" | "both";
 export type Gender = "female" | "male" | "other" | "undisclosed";
-export type MemberStatus = "waitlisted" | "active" | "warned" | "suspended" | "expelled" | "rejected";
+export type MemberStatus = "waitlisted" | "active" | "warned" | "suspended" | "expelled" | "rejected" | "closed";
 export type MemberRole = "member" | "founder";
 
 export type Zone = { id: number; name: string };
@@ -19,6 +19,7 @@ export type MyProfile = {
   status: MemberStatus;
   role: MemberRole;
   invitesResumeOn: string | null;
+  closedAt: string | null;
   zones: Zone[];
   slots: Slot[];
 };
@@ -33,8 +34,15 @@ export type PreferencesInput = {
 
 export type SignupInput = PreferencesInput & { email: string; gender: Gender; birthYear: number };
 
-/** Errore con un messaggio già pronto per l'interfaccia. */
-export class ApiError extends Error {}
+/** Errore con un messaggio già pronto per l'interfaccia e, se noto, il codice del server. */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public code?: string,
+  ) {
+    super(message);
+  }
+}
 
 const SERVER_MESSAGES: Record<string, string> = {
   invalid_email: "Controlla l'indirizzo email.",
@@ -67,13 +75,20 @@ const SERVER_MESSAGES: Record<string, string> = {
   not_pending: "Questo invito non è più da confermare.",
   not_cancellable: "Questo invito non si può più disdire.",
   too_late: "Troppo tardi: il tavolo è già iniziato o sta per iniziare.",
+  already_paid: "Questa colazione è già pagata.",
+  invitation_expired: "La scadenza per rispondere è passata: il posto è andato a un'altra persona.",
+  subscription_required: "Dalla seconda colazione serve l'abbonamento attivo.",
+  already_subscribed: "Hai già un abbonamento attivo.",
+  invalid_plan: "Scegli un piano.",
+  payments_unavailable: "I pagamenti non sono ancora attivi. Riprova più tardi.",
+  not_authenticated: "La sessione è scaduta: accedi di nuovo.",
 };
 
 const GENERIC = "Qualcosa non ha funzionato. Riprova tra poco.";
 
 export function toApiError(error: { message?: string } | null): ApiError {
   const code = Object.keys(SERVER_MESSAGES).find((k) => error?.message?.includes(k));
-  return new ApiError(code ? SERVER_MESSAGES[code] : GENERIC);
+  return new ApiError(code ? SERVER_MESSAGES[code] : GENERIC, code);
 }
 
 export function client() {
@@ -102,6 +117,7 @@ type ProfileRow = {
   status: MemberStatus;
   role: MemberRole;
   invites_resume_on: string | null;
+  closed_at: string | null;
   profile_zones: { zones: Zone & { sort_order: number } }[];
   profile_slots: { slots: Slot }[];
 };
@@ -110,7 +126,7 @@ async function selectMyProfile(userId: string): Promise<MyProfile | null> {
   const { data, error } = await client()
     .from("profiles")
     .select(
-      "id, email, first_name, job, format, status, role, invites_resume_on, " +
+      "id, email, first_name, job, format, status, role, invites_resume_on, closed_at, " +
         "profile_zones(zones(id, name, sort_order)), profile_slots(slots(id, weekday, start_time, duration_minutes))",
     )
     .eq("id", userId)
@@ -127,6 +143,7 @@ async function selectMyProfile(userId: string): Promise<MyProfile | null> {
     status: row.status,
     role: row.role,
     invitesResumeOn: row.invites_resume_on,
+    closedAt: row.closed_at,
     zones: row.profile_zones
       .map((pz) => pz.zones)
       .sort((a, b) => a.sort_order - b.sort_order)

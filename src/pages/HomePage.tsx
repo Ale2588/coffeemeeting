@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { useAuth } from "../auth/AuthProvider";
+import { usePublicPrices } from "../features/usePublicPrices";
 import { ButtonLink } from "../components/Button";
 import { Card } from "../components/Card";
 import { PhotoPlaceholder } from "../components/Placeholder";
@@ -16,6 +17,7 @@ export function HomePage() {
   const { min, max } = PILOT.groupSize;
   const hours = PILOT.freeCancellationHours;
   const { session } = useAuth();
+  const prices = usePublicPrices();
 
   return (
     <>
@@ -85,11 +87,11 @@ export function HomePage() {
             </dd>
             <dt>Colazione</dt>
             <dd>
-              <Price amount={PILOT.breakfastPriceEur} />, pagata quando confermi l'invito
+              <Price cents={prices.breakfastCents} />, pagata quando confermi l'invito
             </dd>
             <dt>Abbonamento</dt>
             <dd>
-              <Price amount={PILOT.subscriptionMonthlyEur} /> al mese, solo dopo la prima colazione e se vuoi
+              <Price cents={prices.monthlyCents} /> al mese, solo dopo la prima colazione e se vuoi
               continuare
             </dd>
             <dt>Disdetta</dt>

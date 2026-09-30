@@ -1,4 +1,4 @@
-import type { FounderMember, Meetup } from "./founderApi";
+import type { FounderMember, Meetup, SubscriptionState } from "./founderApi";
 
 export type Candidate = {
   member: FounderMember;
@@ -16,6 +16,7 @@ const ACTIVE = new Set(["active", "warned"]);
 export function candidatesFor(
   members: FounderMember[],
   meetups: Meetup[],
+  subscriptions: Map<string, SubscriptionState>,
   t: { id: number | null; zoneId: number; slotId: number; date: string; format: "group" | "one_to_one" },
 ): Candidate[] {
   const busyIds = new Set(
@@ -32,6 +33,8 @@ export function candidatesFor(
       if (!m.slotIds.includes(t.slotId)) reasons.push("altro orario");
       if (m.format !== "both" && m.format !== t.format) reasons.push(m.format === "group" ? "solo gruppo" : "solo uno a uno");
       if (m.invitesResumeOn && t.date && m.invitesResumeOn > t.date) reasons.push("in pausa");
+      // Dalla seconda colazione serve l'abbonamento (il database lo verifica comunque).
+      if (subscriptions.get(m.id)?.needsSubscription) reasons.push("senza abbonamento");
       return { member: m, reasons, busy: busyIds.has(m.id) };
     });
 }

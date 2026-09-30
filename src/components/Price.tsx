@@ -1,14 +1,14 @@
-import { formatEur } from "../lib/format";
+import { formatCents } from "../lib/format";
 import { Placeholder } from "./Placeholder";
 
-/** Mostra un prezzo, oppure "[DA DEFINIRE] €" se il valore non è ancora stato fornito. */
-export function Price({ amount }: { amount: number | null }) {
-  if (amount === null) {
+/** Mostra un prezzo in centesimi, oppure "[DA DEFINIRE] €" se non è ancora pubblico. */
+export function Price({ cents }: { cents: number | null }) {
+  if (cents === null) {
     return (
       <>
         <Placeholder /> €
       </>
     );
   }
-  return <>{formatEur(amount)}</>;
+  return <>{formatCents(cents)}</>;
 }

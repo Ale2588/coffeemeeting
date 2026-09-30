@@ -95,7 +95,7 @@ function MeetupForm({ data, existing }: { data: Data; existing?: Meetup }) {
   const now = Date.now();
 
   const candidates = useMemo(
-    () => candidatesFor(data.members, data.meetups, { id: v.id, zoneId: v.zoneId, slotId: v.slotId, date: v.date, format: v.format }),
+    () => candidatesFor(data.members, data.meetups, data.subscriptions, { id: v.id, zoneId: v.zoneId, slotId: v.slotId, date: v.date, format: v.format }),
     [data, v.id, v.zoneId, v.slotId, v.date, v.format],
   );
   const selected = v.profileIds

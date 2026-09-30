@@ -45,6 +45,8 @@ Far incontrare a colazione, in slot fissi e in locali scelti dalla piattaforma, 
   - approvazione all'ingresso tramite lista d'attesa;
   - dimensione dei tavoli (4-6) e incontri uno a uno sbloccati solo da un "vorrei rivederlo" reciproco dopo un incontro di gruppo;
   - soglie esatte di punteggio per ridurre gli inviti o espellere.
+- Idee da studiare:
+  - prezzo della colazione stabilito dal locale, con scelta tra locali a prezzi diversi; l'iscritto indica quanto è disposto a pagare al massimo e la piattaforma ne tiene conto negli abbinamenti (proposta del fondatore, 1 ottobre 2026).
 
 ## Brand Commitments
 
