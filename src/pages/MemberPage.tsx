@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Button, ButtonLink } from "../components/Button";
 import { Card, Notice } from "../components/Card";
@@ -9,7 +9,8 @@ import { SiteHeader } from "../components/SiteHeader";
 import { StatusTag } from "../components/StatusTag";
 import { useMyProfile } from "../features/useMyProfile";
 import { ApiError, setInvitePause, signOut, type MyProfile } from "../lib/api";
-import { addDaysIso, formatDateOnly, todayIso } from "../lib/dates";
+import { addDaysIso, formatDateOnly, formatDateTime, formatDayTitle, formatTime, todayIso } from "../lib/dates";
+import { breakfastsDone, fetchMyInvitations, isPast, type MyInvitation } from "../lib/invitations";
 import { slotLabel } from "../lib/format";
 import { FORMAT_LABEL } from "../lib/labels";
 
@@ -138,11 +139,7 @@ function Active({ profile, onChanged }: { profile: MyProfile; onChanged: () => P
 
       <section className="section" style={{ marginTop: 14 }} aria-labelledby="invites-title">
         <h3 id="invites-title">Prossimi inviti</h3>
-        <p style={{ color: "var(--ink-2)", marginTop: 8 }}>
-          {paused
-            ? `Inviti in pausa: ripartono da ${formatDateOnly(profile.invitesResumeOn!)}.`
-            : "Nessun invito per ora. Ti scriviamo appena ne arriva uno."}
-        </p>
+        <UpcomingInvitations paused={paused} resumeOn={profile.invitesResumeOn} />
       </section>
 
       <section className="section" aria-labelledby="sub-title">
@@ -164,6 +161,64 @@ function Active({ profile, onChanged }: { profile: MyProfile; onChanged: () => P
         <h3 id="pause-title">Pausa</h3>
         <PauseControl paused={paused} onChanged={onChanged} />
       </section>
+    </>
+  );
+}
+
+function UpcomingInvitations({ paused, resumeOn }: { paused: boolean; resumeOn: string | null }) {
+  const [list, setList] = useState<MyInvitation[] | null>(null);
+  const [error, setError] = useState(false);
+  useEffect(() => {
+    fetchMyInvitations()
+      .then(setList)
+      .catch(() => setError(true));
+  }, []);
+
+  if (error) return <Notice tone="error">Impossibile caricare gli inviti. Ricarica la pagina.</Notice>;
+  if (!list) return <LoadingState />;
+
+  const upcoming = list
+    .filter((i) => !isPast(i) && !i.meetupCancelled && (i.status === "pending" || i.status === "confirmed"))
+    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+  const done = breakfastsDone(list);
+
+  return (
+    <>
+      {upcoming.length === 0 ? (
+        <p style={{ color: "var(--ink-2)", marginTop: 8 }}>
+          {paused && resumeOn
+            ? `Inviti in pausa: ripartono da ${formatDateOnly(resumeOn)}.`
+            : "Nessun invito per ora. Ti scriviamo appena ne arriva uno."}
+        </p>
+      ) : (
+        <ul className="invite-list">
+          {upcoming.map((i) => (
+            <li key={i.id}>
+              <Link to={`/invito/${i.id}`} className="invite-row">
+                <span>
+                  <span className="invite-row__when">
+                    {formatDayTitle(i.startsAt)}, {formatTime(i.startsAt)}
+                  </span>
+                  <br />
+                  <span className="invite-row__where">
+                    {i.venueName ?? i.zoneName}
+                    {i.status === "pending" && ` · rispondi entro ${formatDateTime(i.respondBy)}`}
+                  </span>
+                </span>
+                {i.status === "confirmed" ? (
+                  <StatusTag>Confermato</StatusTag>
+                ) : (
+                  <StatusTag tone="warning">Da confermare</StatusTag>
+                )}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      <dl className="kv" style={{ marginTop: 16 }}>
+        <dt>Colazioni fatte</dt>
+        <dd>{done}</dd>
+      </dl>
     </>
   );
 }

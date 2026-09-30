@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "../components/Button";
 import { Notice } from "../components/Card";
 import { LoadingState } from "../components/LoadingState";
@@ -7,7 +7,7 @@ import { useToast } from "../components/Toast";
 import { ApiError, type MemberStatus } from "../lib/api";
 import { FORMAT_LABEL } from "../lib/labels";
 import { zoneNames } from "./catalogLabels";
-import { fetchMembers, setMemberStatus, type FounderMember } from "./founderApi";
+import { fetchBreakfastCounts, fetchMembers, setMemberStatus, type FounderMember } from "./founderApi";
 import { useFounder } from "./FounderLayout";
 import { genderAge, STATUS_LABEL, STATUS_ORDER, STATUS_TONE } from "./labels";
 import { useAsync } from "./useAsync";
@@ -18,7 +18,11 @@ type Pending = { member: FounderMember; to: MemberStatus };
 export function MembersPage() {
   const { catalog, refreshCounts } = useFounder();
   const toast = useToast();
-  const { data, error, loading, reload } = useAsync(fetchMembers);
+  const load = useCallback(async () => {
+    const [members, breakfasts] = await Promise.all([fetchMembers(), fetchBreakfastCounts()]);
+    return members.map((m) => ({ ...m, breakfasts: breakfasts.get(m.id) ?? 0 }));
+  }, []);
+  const { data, error, loading, reload } = useAsync(load);
   const [filter, setFilter] = useState<Filter>("all");
   const [pending, setPending] = useState<Pending | null>(null);
   const [busy, setBusy] = useState(false);
@@ -59,7 +63,7 @@ export function MembersPage() {
       <title>Iscritti · Pannello · CoffeeMeeting</title>
       <div>
         <h2>Iscritti</h2>
-        <p className="admin__intro">Colazioni fatte e media voti arrivano con i tavoli (fase 4) e il riscontro (fase 6).</p>
+        <p className="admin__intro">Colazioni: tavoli confermati già iniziati. La media voti arriva con il riscontro (fase 6).</p>
       </div>
 
       <div className="filters" role="group" aria-label="Filtra per stato">
@@ -142,9 +146,7 @@ export function MembersPage() {
                     <td className="mono">
                       <span aria-label={ga.long}>{ga.short}</span>
                     </td>
-                    <td className="mono" title="Disponibile dalla fase 4">
-                      —
-                    </td>
+                    <td className="mono">{m.breakfasts}</td>
                     <td>
                       <StatusTag tone={STATUS_TONE[m.status]}>{STATUS_LABEL[m.status]}</StatusTag>
                     </td>

@@ -53,6 +53,20 @@ const SERVER_MESSAGES: Record<string, string> = {
   invalid_venue_name: "Scrivi il nome del locale.",
   invalid_venue_address: "Scrivi l'indirizzo del locale.",
   invalid_venue_notes: "Le note possono avere al massimo 1000 caratteri.",
+  invalid_venue: "Scegli un locale attivo.",
+  missing_venue: "Assegna un locale prima di inviare gli inviti.",
+  invalid_date: "La data deve essere futura e cadere nel giorno dello slot scelto.",
+  invalid_group_size: "Un tavolo di gruppo ha 4–6 persone, uno a uno ne ha 2.",
+  too_many_participants: "Troppe persone per questo formato.",
+  invalid_participants: "Alcune persone non sono attive: aggiorna l'elenco.",
+  participant_busy: "Qualcuno è già in un altro tavolo nello stesso giorno e orario.",
+  already_invited: "Questa persona è già stata invitata a questo tavolo.",
+  not_editable: "Questo tavolo non si può più modificare.",
+  deadline_passed: "La scadenza di risposta è già passata: scegli un'altra data.",
+  meetup_cancelled: "Questo tavolo è stato annullato.",
+  not_pending: "Questo invito non è più da confermare.",
+  not_cancellable: "Questo invito non si può più disdire.",
+  too_late: "Troppo tardi: il tavolo è già iniziato o sta per iniziare.",
 };
 
 const GENERIC = "Qualcosa non ha funzionato. Riprova tra poco.";

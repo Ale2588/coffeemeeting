@@ -159,3 +159,149 @@ export async function saveVenue(v: VenueInput): Promise<number> {
   if (error) throw toApiError(error);
   return data as number;
 }
+
+// ---------------------------------------------------------------------------
+// Tavoli (fase 4)
+// ---------------------------------------------------------------------------
+
+export type MeetupStatus = "draft" | "sent" | "cancelled";
+export type FounderInvitationStatus = "draft" | "pending" | "confirmed" | "expired" | "cancelled";
+
+export type FounderInvitation = {
+  id: number;
+  profileId: string;
+  status: FounderInvitationStatus;
+  respondBy: Date;
+  cancelledBy: "member" | "founder" | null;
+};
+
+export type Meetup = {
+  id: number;
+  zoneId: number;
+  slotId: number;
+  date: string;
+  format: "group" | "one_to_one";
+  venueId: number | null;
+  status: MeetupStatus;
+  startsAt: Date;
+  durationMinutes: number;
+  responseDeadline: Date;
+  invitations: FounderInvitation[];
+};
+
+export type MeetupInput = {
+  id: number | null;
+  zoneId: number;
+  slotId: number;
+  date: string;
+  format: "group" | "one_to_one";
+  venueId: number | null;
+  profileIds: string[];
+};
+
+export type AppSettings = { responseDaysBefore: number; responseTime: string; freeCancellationHours: number };
+
+type MeetupRow = {
+  id: number;
+  zone_id: number;
+  slot_id: number;
+  meetup_date: string;
+  format: "group" | "one_to_one";
+  venue_id: number | null;
+  status: MeetupStatus;
+  starts_at: string;
+  duration_minutes: number;
+  response_deadline: string;
+  invitations: {
+    id: number;
+    profile_id: string;
+    status: FounderInvitationStatus;
+    respond_by: string;
+    cancelled_by: "member" | "founder" | null;
+  }[];
+};
+
+/** Stato effettivo: un invito in attesa oltre la scadenza è scaduto. */
+export function effectiveStatus(i: FounderInvitation): FounderInvitationStatus {
+  return i.status === "pending" && i.respondBy.getTime() <= Date.now() ? "expired" : i.status;
+}
+
+export async function fetchMeetups(): Promise<Meetup[]> {
+  const { data, error } = await client()
+    .from("meetups")
+    .select(
+      "id, zone_id, slot_id, meetup_date, format, venue_id, status, starts_at, duration_minutes, response_deadline, " +
+        "invitations(id, profile_id, status, respond_by, cancelled_by)",
+    )
+    .order("starts_at");
+  if (error) throw toApiError(error);
+  return (data as unknown as MeetupRow[]).map((r) => ({
+    id: r.id,
+    zoneId: r.zone_id,
+    slotId: r.slot_id,
+    date: r.meetup_date,
+    format: r.format,
+    venueId: r.venue_id,
+    status: r.status,
+    startsAt: new Date(r.starts_at),
+    durationMinutes: r.duration_minutes,
+    responseDeadline: new Date(r.response_deadline),
+    invitations: r.invitations.map((i) => ({
+      id: i.id,
+      profileId: i.profile_id,
+      status: i.status,
+      respondBy: new Date(i.respond_by),
+      cancelledBy: i.cancelled_by,
+    })),
+  }));
+}
+
+export async function fetchSettings(): Promise<AppSettings> {
+  const { data, error } = await client()
+    .from("app_settings")
+    .select("response_days_before, response_time, free_cancellation_hours")
+    .single();
+  if (error) throw toApiError(error);
+  const r = data as { response_days_before: number; response_time: string; free_cancellation_hours: number };
+  return {
+    responseDaysBefore: r.response_days_before,
+    responseTime: r.response_time,
+    freeCancellationHours: r.free_cancellation_hours,
+  };
+}
+
+/** Colazioni fatte per iscritto (solo chi ne ha almeno una). */
+export async function fetchBreakfastCounts(): Promise<Map<string, number>> {
+  const { data, error } = await client().rpc("founder_breakfast_counts");
+  if (error) throw toApiError(error);
+  return new Map((data as { profile_id: string; breakfasts: number }[]).map((r) => [r.profile_id, r.breakfasts]));
+}
+
+export async function saveMeetup(m: MeetupInput): Promise<number> {
+  const { data, error } = await client().rpc("founder_save_meetup", {
+    p_id: m.id,
+    p_zone_id: m.zoneId,
+    p_slot_id: m.slotId,
+    p_date: m.date,
+    p_format: m.format,
+    p_venue_id: m.venueId,
+    p_profile_ids: m.profileIds,
+  });
+  if (error) throw toApiError(error);
+  return data as number;
+}
+
+export async function sendMeetup(id: number): Promise<void> {
+  const { error } = await client().rpc("founder_send_meetup", { p_id: id });
+  if (error) throw toApiError(error);
+}
+
+export async function addParticipant(meetupId: number, profileId: string): Promise<void> {
+  const { error } = await client().rpc("founder_add_participant", { p_meetup_id: meetupId, p_profile_id: profileId });
+  if (error) throw toApiError(error);
+}
+
+export async function cancelMeetup(id: number): Promise<void> {
+  const { error } = await client().rpc("founder_cancel_meetup", { p_id: id });
+  if (error) throw toApiError(error);
+}
